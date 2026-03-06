@@ -1,0 +1,19 @@
+[project]
+name = "equities-watchlist"
+version = "0.1.0"
+description = "MCP server for daily equities watchlist and trading plan"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp[cli]>=1.0.0",
+    "polygon-api-client>=1.14.0",
+    "httpx>=0.27.0",
+    "python-dotenv>=1.0.0",
+    "boto3>=1.35.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+equities-watchlist = "equities_watchlist.server:main"
