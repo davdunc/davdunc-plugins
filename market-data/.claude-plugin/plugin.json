@@ -1,0 +1,12 @@
+{
+  "name": "market-data",
+  "description": "Download historical US stock market data (minute and daily OHLCV with extended hours) from Massive.com flat files. Stores data locally for analysis.",
+  "version": "0.1.0",
+  "author": {
+    "name": "davdunc",
+    "url": "https://github.com/davdunc"
+  },
+  "homepage": "https://github.com/davdunc/davdunc-plugins",
+  "repository": "https://github.com/davdunc/davdunc-plugins",
+  "license": "MIT"
+}
