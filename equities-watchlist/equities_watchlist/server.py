@@ -1,6 +1,6 @@
 import asyncio
 import json
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 
 from mcp.server.fastmcp import FastMCP
 
@@ -474,6 +474,93 @@ async def get_calendar_events() -> str:
     return json.dumps(result, indent=2, default=str)
 
 
+@mcp.tool()
+async def get_market_news(
+    tickers: list[str] | None = None,
+    limit: int = 20,
+    hours_back: int = 16,
+) -> str:
+    """Get recent market news with per-ticker sentiment analysis from Polygon.
+
+    Returns structured news articles with headlines, descriptions, affected
+    tickers, and sentiment (positive/negative/neutral) with reasoning for
+    each mentioned ticker. Use this in the morning to understand overnight
+    catalysts and pre-market narratives.
+
+    Args:
+        tickers: Optional list of tickers to filter news for. If None,
+            fetches broad market news. Can pass watchlist tickers to get
+            targeted news for your candidates.
+        limit: Number of articles per ticker (default 20, max 50).
+        hours_back: How far back to look for news (default 16 hours,
+            covers overnight + prior session).
+
+    Returns:
+        JSON with articles grouped by ticker, each containing title,
+        description, publisher, publish time, keywords, and per-ticker
+        sentiment with reasoning.
+    """
+    loop = asyncio.get_event_loop()
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=hours_back)).strftime(
+        "%Y-%m-%dT%H:%M:%SZ"
+    )
+    per_ticker_limit = min(limit, 50)
+
+    if tickers:
+        # Fetch news for each ticker in parallel
+        async def _fetch_ticker_news(t: str) -> tuple[str, list]:
+            articles = await loop.run_in_executor(
+                None, polygon_client.get_news, t, per_ticker_limit, cutoff,
+            )
+            return t, articles
+
+        results = await asyncio.gather(
+            *[_fetch_ticker_news(t) for t in tickers],
+            return_exceptions=True,
+        )
+
+        grouped = {}
+        for result in results:
+            if isinstance(result, Exception):
+                continue
+            ticker, articles = result
+            if articles:
+                grouped[ticker] = articles
+    else:
+        # Broad market news
+        articles = await loop.run_in_executor(
+            None, polygon_client.get_news, None, per_ticker_limit, cutoff,
+        )
+        grouped = {"market": articles}
+
+    # Build summary with sentiment highlights
+    summary = {
+        "cutoff_utc": cutoff,
+        "ticker_count": len(grouped),
+        "total_articles": sum(len(v) for v in grouped.values()),
+        "news": {},
+    }
+
+    for ticker, articles in grouped.items():
+        summary["news"][ticker] = []
+        for article in articles:
+            # Get sentiment for this specific ticker if available
+            ticker_sentiment = article.get("sentiments", {}).get(ticker, {})
+            summary["news"][ticker].append({
+                "title": article["title"],
+                "description": article.get("description", ""),
+                "published_utc": article.get("published_utc", ""),
+                "publisher": article.get("publisher", ""),
+                "tickers": article.get("tickers", []),
+                "keywords": article.get("keywords", []),
+                "sentiment": ticker_sentiment.get("sentiment", ""),
+                "sentiment_reasoning": ticker_sentiment.get("reasoning", ""),
+                "all_sentiments": article.get("sentiments", {}),
+            })
+
+    return json.dumps(summary, indent=2, default=str)
+
+
 @mcp.prompt()
 def morning_trading_brief() -> str:
     """Generate a complete morning trading brief with big picture analysis and if/then trade plans.
@@ -486,6 +573,9 @@ Before generating this brief, call these tools in order:
 1. get_previous_day_analysis: analyze yesterday's intraday moves on key stocks
 2. get_trading_plan: get today's market overview, watchlist, pivots, and news
 3. get_calendar_events: get economic releases, earnings, and dividends for today
+4. get_market_news with the top watchlist tickers: get overnight/pre-market news with
+   sentiment analysis. This gives you structured sentiment per ticker with reasoning,
+   which is more reliable than Finviz headlines for building trade theses.
 
 Using ALL of this data, produce the following structured analysis.
 Keep it tight and scannable. This is a working document, not a research report.
@@ -517,6 +607,12 @@ For SPY, QQQ, and the 2-3 most significant movers from the previous day analysis
 
 Do NOT repeat information that's already in the ticker detail cards. Keep this to broad market
 context only.
+
+### Overnight News & Sentiment (from get_market_news)
+Summarize the 3-5 most important overnight stories that affect today's watchlist.
+For each, state: the ticker(s), headline, and the Polygon sentiment + reasoning.
+Flag any sentiment that contradicts your technical bias (e.g., "sentiment is positive
+but price rejected R3 yesterday" = proceed with caution on the long side).
 
 ---
 

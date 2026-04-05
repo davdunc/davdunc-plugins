@@ -257,6 +257,62 @@ def get_camarilla_pivots(ticker: str) -> dict | None:
     }
 
 
+def get_news(
+    ticker: str | None = None,
+    limit: int = 10,
+    published_after: str | None = None,
+) -> list[dict]:
+    """Get recent news articles with sentiment analysis from Polygon.
+
+    Args:
+        ticker: Filter by ticker symbol. None returns all market news.
+        limit: Number of articles to return (max 1000).
+        published_after: ISO date or datetime string for minimum publish time.
+
+    Returns:
+        List of dicts with title, description, tickers, published_utc,
+        publisher, article_url, keywords, and per-ticker sentiment/reasoning.
+    """
+    client = _client()
+    params: dict = {
+        "limit": min(limit, 1000),
+        "order": "desc",
+        "sort": "published_utc",
+    }
+    if ticker:
+        params["ticker"] = ticker
+    if published_after:
+        params["published_utc.gte"] = published_after
+
+    try:
+        results = list(client.list_ticker_news(**params))
+    except Exception:
+        return []
+
+    articles = []
+    for article in results:
+        # Extract per-ticker sentiment from insights
+        sentiments = {}
+        for insight in getattr(article, "insights", None) or []:
+            sentiments[insight.get("ticker", "")] = {
+                "sentiment": insight.get("sentiment", ""),
+                "reasoning": insight.get("sentiment_reasoning", ""),
+            }
+
+        articles.append({
+            "title": getattr(article, "title", ""),
+            "description": getattr(article, "description", ""),
+            "published_utc": getattr(article, "published_utc", ""),
+            "publisher": getattr(article, "publisher", {}).get("name", "") if isinstance(getattr(article, "publisher", None), dict) else str(getattr(article, "publisher", "")),
+            "article_url": getattr(article, "article_url", ""),
+            "tickers": getattr(article, "tickers", []),
+            "keywords": getattr(article, "keywords", []),
+            "sentiments": sentiments,
+        })
+
+    return articles
+
+
 def get_market_overview() -> dict:
     """Get current levels for SPY, QQQ, VIX, DIA using daily aggregates."""
     symbols = ["SPY", "QQQ", "VIXY", "DIA"]
