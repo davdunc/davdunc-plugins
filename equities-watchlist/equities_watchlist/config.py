@@ -9,6 +9,8 @@ POLYGON_API_KEY = os.environ.get("POLYGON_API_KEY", "")
 FINVIZ_API_KEY = os.environ.get("FINVIZ_API_KEY", "")
 MASSIVE_S3_ACCESS_KEY = os.environ.get("MASSIVE_S3_ACCESS_KEY", "")
 MASSIVE_S3_SECRET_KEY = os.environ.get("MASSIVE_S3_SECRET_KEY", "")
+MASSIVE_S3_ENDPOINT = os.environ.get("MASSIVE_S3_ENDPOINT", "https://files.massive.com")
+MASSIVE_S3_BUCKET = os.environ.get("MASSIVE_S3_BUCKET", "flatfiles")
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 DATA_DIR.mkdir(exist_ok=True)

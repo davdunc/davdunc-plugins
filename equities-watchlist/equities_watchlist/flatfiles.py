@@ -7,13 +7,19 @@ from pathlib import Path
 import boto3
 from botocore.config import Config
 
-from .config import DATA_DIR, MASSIVE_S3_ACCESS_KEY, MASSIVE_S3_SECRET_KEY
+from .config import (
+    DATA_DIR,
+    MASSIVE_S3_ACCESS_KEY,
+    MASSIVE_S3_BUCKET,
+    MASSIVE_S3_ENDPOINT,
+    MASSIVE_S3_SECRET_KEY,
+)
 
 CACHE_DIR = DATA_DIR / "flatfiles"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
-BUCKET = "flatfiles"
-ENDPOINT = "https://files.massive.com"
+BUCKET = MASSIVE_S3_BUCKET
+ENDPOINT = MASSIVE_S3_ENDPOINT
 
 
 def _s3_client():

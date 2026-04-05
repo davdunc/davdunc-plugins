@@ -86,8 +86,14 @@ If neither method yields credentials, stop and tell the user:
 
 ## S3 Configuration
 
-- **Endpoint:** `https://files.massive.com`
-- **Bucket:** `flatfiles`
+Resolve endpoint and bucket from environment variables, with defaults:
+
+```bash
+S3_ENDPOINT="${MASSIVE_S3_ENDPOINT:-https://files.massive.com}"
+S3_BUCKET="${MASSIVE_S3_BUCKET:-flatfiles}"
+```
+
+Also check the dotenv file for these if not set in the environment (same resolution logic as credentials above).
 
 ### Available flat file paths
 
@@ -163,8 +169,8 @@ For each date in the range:
 2. **Download the full-market minute file** to a temp location:
    ```bash
    AWS_ACCESS_KEY_ID="$MASSIVE_AK" AWS_SECRET_ACCESS_KEY="$MASSIVE_SK" \
-     aws s3 cp "s3://flatfiles/us_stocks_sip/minute_aggs_v1/${YYYY}/${MM}/${DATE}.csv.gz" \
-     "/tmp/${DATE}_minute_all.csv.gz" --endpoint-url https://files.massive.com
+     aws s3 cp "s3://$S3_BUCKET/us_stocks_sip/minute_aggs_v1/${YYYY}/${MM}/${DATE}.csv.gz" \
+     "/tmp/${DATE}_minute_all.csv.gz" --endpoint-url "$S3_ENDPOINT"
    ```
 
 3. **Extract ticker-specific rows** (include header):
@@ -176,8 +182,8 @@ For each date in the range:
 4. **Download and extract daily aggregate:**
    ```bash
    AWS_ACCESS_KEY_ID="$MASSIVE_AK" AWS_SECRET_ACCESS_KEY="$MASSIVE_SK" \
-     aws s3 cp "s3://flatfiles/us_stocks_sip/day_aggs_v1/${YYYY}/${MM}/${DATE}.csv.gz" \
-     "/tmp/${DATE}_day_all.csv.gz" --endpoint-url https://files.massive.com
+     aws s3 cp "s3://$S3_BUCKET/us_stocks_sip/day_aggs_v1/${YYYY}/${MM}/${DATE}.csv.gz" \
+     "/tmp/${DATE}_day_all.csv.gz" --endpoint-url "$S3_ENDPOINT"
    zcat "/tmp/${DATE}_day_all.csv.gz" | grep "^${TICKER}," > "$DATA_DIR/$TICKER/${TICKER}_${DATE}_daily.csv"
    ```
 

@@ -63,6 +63,8 @@ MASSIVE_S3_SECRET_KEY=your-secret-key
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `MARKET_DATA_DIR` | `~/market_data` | Where downloaded data is stored |
+| `MASSIVE_S3_ENDPOINT` | `https://files.massive.com` | S3-compatible endpoint URL |
+| `MASSIVE_S3_BUCKET` | `flatfiles` | S3 bucket name |
 | `DOTENV_PATH` | `./.env` then `~/.env` | Path to dotenv file for credentials |
 
 ## Usage
