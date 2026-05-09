@@ -1,0 +1,22 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "davdunc-plugins",
+  "description": "Personal Claude plugins collection for equities trading: watchlist generation, trading plans, and historical market data retrieval.",
+  "owner": {
+    "name": "davdunc",
+    "email": "davdunc@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "market-data",
+      "description": "Download historical US stock market data (minute and daily OHLCV with extended hours) from Massive.com flat files. Stores data locally for analysis.",
+      "source": "./market-data",
+      "category": "data",
+      "author": {
+        "name": "davdunc",
+        "url": "https://github.com/davdunc"
+      },
+      "homepage": "https://github.com/davdunc/davdunc-plugins"
+    }
+  ]
+}
