@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "davdunc-plugins",
-  "description": "Personal Claude plugins collection for equities trading: watchlist generation, trading plans, and historical market data retrieval.",
+  "description": "Personal Claude plugins collection for equities trading: watchlist generation, trading plans, historical market data retrieval, and DAS Trader Pro hotkey scripting.",
   "owner": {
     "name": "davdunc",
     "email": "davdunc@gmail.com"
@@ -12,6 +12,17 @@
       "description": "Download historical US stock market data (minute and daily OHLCV with extended hours) from Massive.com flat files. Stores data locally for analysis.",
       "source": "./market-data",
       "category": "data",
+      "author": {
+        "name": "davdunc",
+        "url": "https://github.com/davdunc"
+      },
+      "homepage": "https://github.com/davdunc/davdunc-plugins"
+    },
+    {
+      "name": "dastrader",
+      "description": "DAS Trader Pro hotkey, button, and routing assistant for Cobra Trading users. Writes and debugs DAS hotkey scripts, TriggerOrder brackets, CMD API commands, and risk-sizing entries.",
+      "source": "./dastrader",
+      "category": "trading",
       "author": {
         "name": "davdunc",
         "url": "https://github.com/davdunc"
