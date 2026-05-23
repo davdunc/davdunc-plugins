@@ -1,0 +1,12 @@
+{
+  "name": "dastrader",
+  "description": "DAS Trader Pro hotkey, button, and routing assistant for Cobra Trading users. Writes and debugs DAS hotkey scripts, TriggerOrder brackets, CMD API commands, and risk-sizing entries.",
+  "version": "0.1.0",
+  "author": {
+    "name": "davdunc",
+    "url": "https://github.com/davdunc"
+  },
+  "homepage": "https://github.com/davdunc/davdunc-plugins",
+  "repository": "https://github.com/davdunc/davdunc-plugins",
+  "license": "MIT"
+}
