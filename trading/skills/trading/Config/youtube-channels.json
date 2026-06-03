@@ -1,0 +1,40 @@
+{
+  "youtube_api_key_env": "YOUTUBE_API_KEY",
+  "channels": [
+    {
+      "name": "Michael Nauss CMT",
+      "handle": "@MichaelNauss",
+      "channel_id": "UCbWneBjJmBUCVmD-rJ8YNmQ",
+      "url": "https://www.youtube.com/@MichaelNauss",
+      "focus": "Systematic/algorithmic trading, backtested setups, Trade Ideas platform, COT data",
+      "max_videos": 3
+    },
+    {
+      "name": "SMB Capital",
+      "handle": "@smbcapital",
+      "channel_id": "UCg3B_joekBGJ1s_4fRjsMKA",
+      "url": "https://www.youtube.com/@smbcapital",
+      "focus": "Playbook trades, tape reading, trade reviews, psychology, AI trading tools",
+      "max_videos": 3
+    },
+    {
+      "name": "Stocked Up / Trade Ideas",
+      "handle": "@StockedUp",
+      "channel_id": "",
+      "url": "https://www.youtube.com/@StockedUp",
+      "focus": "Scanner setups, market commentary, weekly stock picks, Bookmap levels",
+      "max_videos": 3,
+      "note": "Channel ID needs lookup — use @StockedUpLIVE for daily streams"
+    },
+    {
+      "name": "Humbled Trader",
+      "handle": "@HumbledTrader",
+      "channel_id": "UCcIvNGMBSQWwo1v3n-ZRBCw",
+      "url": "https://www.youtube.com/@HumbledTrader",
+      "focus": "Retail trader perspective, stock recaps, education, psychology, lifestyle",
+      "max_videos": 2
+    }
+  ],
+  "lookback_days": 7,
+  "extract_fields": ["key_tickers", "setups_mentioned", "market_outlook", "lessons"]
+}

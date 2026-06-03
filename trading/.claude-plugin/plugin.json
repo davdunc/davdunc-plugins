@@ -1,0 +1,12 @@
+{
+  "name": "trading",
+  "description": "Intraday momentum trading intelligence: morning game plans, daily reviews (R-units, both-account aware), evening video review, SEC filings, statistical covariance, and DAS Trader integration. Includes deterministic publish workflow to Notion + Slack + DAS Market Viewer.",
+  "version": "0.2.0",
+  "author": {
+    "name": "davdunc",
+    "url": "https://github.com/davdunc"
+  },
+  "homepage": "https://github.com/davdunc/davdunc-plugins",
+  "repository": "https://github.com/davdunc/davdunc-plugins",
+  "license": "MIT"
+}
