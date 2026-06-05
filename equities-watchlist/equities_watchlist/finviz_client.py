@@ -36,7 +36,7 @@ async def get_screener_results(filters: str | None = None) -> list[dict]:
         "o": "-relativevolume",  # sort by RVOL descending
         **_auth_params(),
     }
-    async with httpx.AsyncClient(timeout=30) as client:
+    async with httpx.AsyncClient(timeout=30, follow_redirects=True) as client:
         resp = await client.get(BASE_URL, params=params, headers=_headers())
         resp.raise_for_status()
 
