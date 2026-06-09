@@ -1,0 +1,11 @@
+{
+    "name": "falcon-gameplan",
+    "description": "MorningGamePlan engine for intraday trading: SPY GEX regime, Camarilla pivots, SEC EDGAR filings, Finviz gapper screen, and R-S+ATM dilution scan. Packages the falcon gameplan toolchain (reusing falcon-core/falcon-screener/sangre-signal) so any machine gets it via the plugin marketplace instead of local scripts.",
+    "version": "0.1.0",
+    "author": {
+        "name": "davdunc",
+        "url": "https://github.com/davdunc"
+    },
+    "homepage": "https://github.com/davdunc/davdunc-plugins",
+    "repository": "https://github.com/davdunc/davdunc-plugins"
+}

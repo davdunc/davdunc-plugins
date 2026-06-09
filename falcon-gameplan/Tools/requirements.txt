@@ -1,0 +1,7 @@
+# falcon-gameplan plugin — Python deps for the gameplan tools
+# Install into a project venv:  python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+yfinance==0.2.65        # SPY GEX chain (NB: OI/IV feed currently broken upstream — see SKILL gotchas)
+scipy>=1.11             # Black-Scholes-Merton gamma (spy_gex)
+numpy>=1.26
+pandas>=2.0
+requests>=2.31          # Finviz export, SEC EDGAR, Polygon REST
