@@ -18,6 +18,11 @@ Failure mode this prevents: 2026-06-03 — drafted clean gameplan, then asked "p
 
 **Anti-pattern:** Hard-coding dollar amounts ("max $280 risk", "target $30.50") in workflow output. R-units are the lingua franca; dollars derive from PREFERENCES.
 
+> **Canonical schema:** setup grades, R-units, and the plan's structured fields
+> follow `Reference/ReportingSchema.md` (backed by `tradekit.reporting`) — the
+> same contract DailyReview/WeeklyReview report against, so the morning plan and
+> the evening recap line up on the same grade ladder and R axis.
+
 ## Steps
 
 ### Phase 1: Market Context (6:00-6:20 CT)
