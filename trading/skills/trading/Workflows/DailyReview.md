@@ -207,6 +207,22 @@ Group by ticker but show account split when same ticker hit both books.
 > *"[One-paragraph contract — what to maintain, what to refine]"*
 ```
 
+### 9. Persist the structured card
+
+Write the day to the canonical store so it joins the comparable record set (this
+is what `cards trend` / `cards weekly` later read — not the prose above):
+
+```bash
+# falcon.json   = the deterministic falcon-stats ingest output (verbatim)
+# narrative.json = the structured judgment built in steps 2-6
+#   (trades[], discipline{} rubric flags, patterns[], lessons[], headline, ...)
+tradekit cards ingest --falcon-stats falcon.json --narrative narrative.json --date "$TODAY"
+```
+
+falcon owns the numbers (carried through unchanged); the narrative carries the
+grades/discipline/patterns/lessons. See `Reference/ReportingSchema.md → Ingest`
+for the narrative contract.
+
 ### Anti-patterns (DO NOT)
 
 - ❌ Hand-roll P&L from Trades.csv with FIFO matching — wrong round-trip count, undercounts P&L

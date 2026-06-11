@@ -94,9 +94,45 @@ The same item maps onto DynamoDB (`pk`/`sk`, like `falcon-stats`) and archives
 verbatim to object storage at `record_type/scope/date.json`. Comparison reads
 *records*, not prose.
 
+## Ingest (deterministic + unstructured → one card)
+
+`tradekit cards ingest` is the loop-closer. It takes the **deterministic**
+falcon output and the **structured judgment** the review produced, and writes
+one comparable daily card.
+
+```bash
+tradekit cards ingest \
+  --falcon-stats falcon.json \      # falcon-stats ingest output (P&L, verbatim)
+  --narrative narrative.json \      # grades, discipline, patterns, lessons
+  --date 2026-06-11
+```
+
+- **`--falcon-stats`** — a JSON list (or `{account: stat}` map) of per-account
+  DailyStats. Field names are alias-tolerant; the numbers are carried through
+  unchanged. `-` reads stdin. When falcon reports a win rate but not win/loss
+  counts, the counts are reconstructed from `win_rate × round_trips`.
+- **`--narrative`** — the structured judgment the workflow assembles (all keys
+  optional):
+
+  ```json
+  {
+    "headline": "...", "market_regime": "...", "one_percent_result": "...",
+    "trades": [{"ticker","account","direction","setup","shares",
+                "realized_pnl","r_multiple","grade","covariance","verdict"}],
+    "discipline": {"followed_game_plan": true, "honored_stops": true, "...": true},
+    "patterns": ["..."], "lessons": ["..."],
+    "monitored_not_traded": ["..."], "behavioral_contract": "..."
+  }
+  ```
+
+  `discipline` accepts either rubric **flags** (as above) or a pre-scored
+  `{"met": {...}, "total": N}` block — either way the total is recomputed from
+  `met`, never trusted blindly.
+
 ## CLI
 
 ```bash
+tradekit cards ingest --falcon-stats f.json --narrative n.json  # build + persist a card
 tradekit cards trend  --since 2026-06-01            # canonical multi-day table
 tradekit cards weekly --since 2026-06-08            # weekly rollup
 tradekit cards show   2026-06-11                    # one daily card
