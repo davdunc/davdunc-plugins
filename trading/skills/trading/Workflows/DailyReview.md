@@ -106,20 +106,26 @@ Check against known behavioral patterns from TELOS and intelligence base:
 
 ### 4. Calculate Discipline Score
 
-Score 1-10 based on:
-- Followed morning game plan? (+2)
-- Playbook trades only? (+2)
-- Honored stops? (+2)
+Score out of 10 using the canonical rubric (`Reference/ReportingSchema.md` →
+*Discipline rubric*, backed by `tradekit.reporting.grading`). The number is
+reproducible from the checklist, not eyeballed:
+
+- Followed the published game plan (not screen impulses)? (+2)
+- Only playbook setups (Offsides / Fashionably Late)? (+1)
+- Honored stops; no averaging down? (+2)
 - No revenge trading? (+1)
-- Paused after losses? (+1)
-- Thesis trade taken live? (+1)
-- Appropriate sizing? (+1)
+- Paused / reset after losses? (+1)
+- Took the thesis trade live with conviction sizing? (+1)
+- Conviction sizing, not scattered small lots? (+1)
+- Account separation — LIVE served the plan, not a parallel impulse book? (+1)
 
 ### 5. Compare to Prior Days
 
-Load recent reviews from `~/.claude/PAI/USER/TRADING/Reviews/` and show trend:
+Read prior **records** (not prose) — `tradekit cards trend --since <date>`,
+which queries the persisted daily cards. Use the canonical column set
+(`Reference/ReportingSchema.md` → *Canonical multi-day comparison columns*):
 ```
-Date | Live P&L | Sim P&L | Discipline | Key Pattern
+| Date | LIVE P&L | LIVE RTs | SIM P&L | Discipline | Avg Grade | Key Pattern |
 ```
 
 ### 6. Extract Lessons
@@ -187,10 +193,11 @@ Group by ticker but show account split when same ticker hit both books.
 [Behavioral patterns observed — account-separation shape, off-plan containment, banned-ticker respect, etc.]
 
 ### Discipline Score: X/10
-[Breakdown by criterion incl. NEW criterion: "Disciplined account separation" — LIVE activity serves the published plan, not parallel-impulse]
+[Per-criterion breakdown from the canonical 8-criterion rubric (Step 4 / `Reference/ReportingSchema.md`). "Account separation" is a first-class criterion — LIVE activity serves the published plan, not parallel-impulse.]
 
 ### Multi-Day Trend
-| Date | LIVE P&L | LIVE Execs | SIM P&L | Discipline | Key Pattern |
+[Canonical columns — same as Step 5 and WeeklyReview's Daily Breakdown. "LIVE RTs" = round-trips from `falcon-stats ingest`, NOT raw fill count. "Avg Grade" = mean of the day's trade grades on the one A/B/C/D/F ladder.]
+| Date | LIVE P&L | LIVE RTs | SIM P&L | Discipline | Avg Grade | Key Pattern |
 [Last 5-6 sessions with both accounts]
 
 ### Lessons
@@ -209,6 +216,7 @@ Group by ticker but show account split when same ticker hit both books.
 - ❌ Quote "Avg R" without checking whether trades had `planned_stop` set — most manual trades don't, making R unreliable; note "R unreliable today" when applicable
 
 ### Cross-references
+- **Canonical reporting schema:** `Reference/ReportingSchema.md` — the one grade ladder, discipline rubric, R-unit format, and multi-day columns this card renders (backed by `tradekit.reporting`). When prose and code disagree, code wins.
 - Multi-account spec: `[[trading-skill-multi-account-spec]]` — CRITICAL, 2 recurrences
 - Account column parsing: `[[check-account-column-first]]`
 - DAS routing safety: `[[das-sell-opens-short-not-close]]`

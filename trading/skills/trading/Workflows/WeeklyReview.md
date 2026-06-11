@@ -6,11 +6,18 @@ description: Aggregate weekly trading data — P&L, patterns, discipline trend, 
 
 ## Steps
 
+> **Canonical schema:** this workflow renders the same grade ladder, discipline
+> rubric, and multi-day columns defined in `Reference/ReportingSchema.md`. The
+> aggregation below is also available directly as `tradekit cards weekly`.
+
 ### 1. Load All Daily Reviews
 
-Read all reviews from `~/.claude/PAI/USER/TRADING/Reviews/` for the current week (Monday-Friday).
+Prefer the **persisted records**: `tradekit cards trend --since <Mon> --until <Fri>`
+reads the structured daily cards for the week (and `tradekit cards weekly`
+produces the full rollup). Fall back to the prose reviews in
+`~/.claude/PAI/USER/TRADING/Reviews/` only if a day was never ingested.
 
-If reviews don't exist for some days, ingest trades for those days first.
+If records don't exist for some days, ingest trades for those days first.
 
 ### 2. Aggregate P&L
 
@@ -18,11 +25,11 @@ If reviews don't exist for some days, ingest trades for those days first.
 |--------|-------------|
 | Weekly Live P&L | Sum of all daily live P&L |
 | Weekly Sim P&L | Sum of all daily sim P&L |
-| Total Trades | Sum of all trade executions |
-| Win Rate | Winning positions / total positions |
+| Total Round-Trips | Sum of all daily LIVE round-trips (not raw fills) |
+| Win Rate | Winning positions / total decided positions |
 | Best Trade | Highest single-position P&L |
 | Worst Trade | Lowest single-position P&L |
-| Avg Discipline Score | Mean of daily scores |
+| Avg Discipline Score | Mean of daily scores (each N/10 from the canonical rubric) |
 
 ### 3. Pattern Analysis
 
@@ -59,10 +66,11 @@ Suggest updates to:
 
 P&L SUMMARY:
 Live: $X | Sim: $X | Total: $X
-Trades: X | Win Rate: X% | Avg Discipline: X/10
+Round-Trips: X | Win Rate: X% | Avg Discipline: X/10
 
 DAILY BREAKDOWN:
-[table: date, live P&L, sim P&L, discipline, key pattern]
+[canonical columns — identical to DailyReview's Multi-Day Trend]
+| Date | LIVE P&L | LIVE RTs | SIM P&L | Discipline | Avg Grade | Key Pattern |
 
 BEST TRADE: [ticker, setup, P&L, what made it work]
 WORST TRADE: [ticker, P&L, what went wrong]
