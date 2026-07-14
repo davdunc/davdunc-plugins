@@ -41,7 +41,7 @@ cp ~/.claude/skills/Trading/Templates/Intelligence/Setups/OffsidesShort.md \
 | `falcon-stats` CLI | **Canonical P&L source for DailyReview** (per workflow HARD RULE) | `uv tool install falcon-stats` or `pip install falcon-stats` |
 | `boto3` | DynamoDB persistence + S3 flat files | `uv pip install boto3` |
 | `yt-dlp` | EveningVideoReview transcript fetch | `dnf5 install yt-dlp` |
-| `bun` | PAI inference tools | https://bun.sh/install |
+| `bun` | LifeOS inference tools | https://bun.sh/install |
 | `gh` CLI | EDGAR / GitHub fallback | `dnf5 install gh` |
 | `curl` | Voice notify daemon (port 8888) | system default |
 | DAS Trader Pro | Real-time quotes + order execution | Windows-side install (operator-managed) |
@@ -128,5 +128,5 @@ skills/trading/
 
 - **Operating system:** Linux (tested Fedora 44 + Ubuntu/WSL2) — DAS Trader runs Windows-side, accessed via TCP socket
 - **Claude Code:** v2.1.x or later
-- **PAI:** 4.0.3 or later (uses Algorithm v3.7.0 mode framing)
+- **LifeOS (formerly PAI):** 4.0.3 or later (uses Algorithm v3.7.0 mode framing)
 - **Falcon ecosystem:** designed to integrate with the operator's FL (Fashionably Late) auto-trader; works standalone if FL is absent
