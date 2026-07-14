@@ -28,6 +28,28 @@
         "url": "https://github.com/davdunc"
       },
       "homepage": "https://github.com/davdunc/davdunc-plugins"
+    },
+    {
+      "name": "trading",
+      "description": "Intraday momentum trading intelligence: morning game plans, daily reviews (R-units, both-account aware), evening video review, SEC filings, statistical covariance, and DAS Trader integration. Includes deterministic publish workflow to Notion + Slack + DAS Market Viewer.",
+      "source": "./trading",
+      "category": "trading",
+      "author": {
+        "name": "davdunc",
+        "url": "https://github.com/davdunc"
+      },
+      "homepage": "https://github.com/davdunc/davdunc-plugins"
+    },
+    {
+      "name": "equities-watchlist",
+      "description": "Daily equities watchlist and trading-plan MCP server. Screens for high-volume, high-volatility candidates using Finviz + Polygon/Massive data (RVOL, ATR, premarket volume) and builds structured morning briefs with Camarilla pivots and news.",
+      "source": "./equities-watchlist",
+      "category": "trading",
+      "author": {
+        "name": "davdunc",
+        "url": "https://github.com/davdunc"
+      },
+      "homepage": "https://github.com/davdunc/davdunc-plugins"
     }
   ]
 }
