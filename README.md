@@ -34,6 +34,19 @@ Daily equities watchlist and trading plan generator. Screens for high-volume, hi
 **Prompts:**
 - `morning_trading_brief` — Full structured brief with bias, if/then trade plans, and stocks to avoid
 
+### [lifesystems](lifesystems/)
+
+**Type:** Claude Code skill (`LifeSystems`)
+
+Donella Meadows' *Thinking in Systems* applied to a personal Life OS: model life domains as stocks and flows, scan recurring problems against the eight system traps, audit stuck goals with the 12 leverage points, repair broken feedback loops, and run "Dancing with Systems" periodic reviews. Pairs with a TELOS-style life-context directory when present; works conversationally without one.
+
+```bash
+claude plugin install davdunc/davdunc-plugins --path lifesystems
+
+# Or copy directly
+cp -r lifesystems/skills/lifesystems ~/.claude/skills/LifeSystems
+```
+
 ## Requirements
 
 - [Claude Code](https://claude.ai/claude-code)

@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "davdunc-plugins",
-  "description": "Personal Claude plugins collection for equities trading: watchlist generation, trading plans, historical market data retrieval, and DAS Trader Pro hotkey scripting.",
+  "description": "Personal Claude plugins collection: equities trading (watchlists, trading plans, market data, DAS Trader Pro hotkeys) and life-systems analysis (Thinking in Systems applied to a personal Life OS).",
   "owner": {
     "name": "davdunc",
     "email": "davdunc@gmail.com"
@@ -45,6 +45,17 @@
       "description": "Daily equities watchlist and trading-plan MCP server. Screens for high-volume, high-volatility candidates using Finviz + Polygon/Massive data (RVOL, ATR, premarket volume) and builds structured morning briefs with Camarilla pivots and news.",
       "source": "./equities-watchlist",
       "category": "trading",
+      "author": {
+        "name": "davdunc",
+        "url": "https://github.com/davdunc"
+      },
+      "homepage": "https://github.com/davdunc/davdunc-plugins"
+    },
+    {
+      "name": "lifesystems",
+      "description": "Apply Donella Meadows' Thinking in Systems to a personal Life OS: stocks/flows life mapping, eight system-trap scans, 12-leverage-point goal audits, feedback-loop repair, and Dancing-with-Systems periodic reviews.",
+      "source": "./lifesystems",
+      "category": "productivity",
       "author": {
         "name": "davdunc",
         "url": "https://github.com/davdunc"

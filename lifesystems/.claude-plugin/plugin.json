@@ -1,0 +1,12 @@
+{
+  "name": "lifesystems",
+  "description": "Apply Donella Meadows' Thinking in Systems to a personal Life OS: model life domains as stocks and flows, scan recurring problems against the eight system traps, audit goals with the 12 leverage points, repair feedback loops, and run Dancing-with-Systems periodic reviews.",
+  "version": "0.1.0",
+  "author": {
+    "name": "davdunc",
+    "url": "https://github.com/davdunc"
+  },
+  "homepage": "https://github.com/davdunc/davdunc-plugins",
+  "repository": "https://github.com/davdunc/davdunc-plugins",
+  "license": "MIT"
+}
