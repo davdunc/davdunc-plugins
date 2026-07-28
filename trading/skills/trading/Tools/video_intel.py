@@ -46,11 +46,11 @@ from pathlib import Path
 # all three means the tool works whether it is run from a plugin checkout or
 # from a personal ~/.claude skill directory.
 SOURCE_CANDIDATES = [
-    Path(p) for p in [os.environ.get("ANALYST_SOURCES", "")] if p
-] + [
     Path(__file__).resolve().parent.parent / "Reference" / "AnalystSources.md",
     Path.home() / ".claude" / "skills" / "Trading" / "AnalystSources.md",
 ]
+if os.environ.get("ANALYST_SOURCES"):
+    SOURCE_CANDIDATES.insert(0, Path(os.environ["ANALYST_SOURCES"]))
 
 OUTDIR = Path(os.environ.get(
     "VIDEO_INTEL_DIR",
@@ -112,11 +112,12 @@ def feed(channel_id: str) -> list[dict]:
         def grab(tag):
             m = re.search(rf"<{tag}>(.*?)</{tag}>", e, re.S)
             return m.group(1).strip() if m else ""
-        if not safe_id(grab("yt:videoId")):
+        vid = grab("yt:videoId")
+        if not safe_id(vid):
             continue
         # Unescape: RSS carries &amp;/&quot; literally, which both uglifies the
         # printed title and silently breaks keyword matching against it.
-        vids.append({"id": grab("yt:videoId"),
+        vids.append({"id": vid,
                      "title": html.unescape(grab("title")),
                      "published": grab("published")})
     return vids
