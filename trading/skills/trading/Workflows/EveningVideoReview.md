@@ -10,39 +10,64 @@ a pre-game notes file for tomorrow's MorningGamePlan.
 
 ## Channels
 
-| Channel      | YouTube Handle      | Channel ID                 | Format                |
-|--------------|---------------------|----------------------------|-----------------------|
-| StockedUp    | @StockedUp          | UC-m6zNItyoDk5lSykDlhE4Q  | 1 evening recap/day   |
-| TraderTV Live| @TraderTVLive       | UCn75vF3UxwWeWPAY4-5Z6HQ  | 4+ videos/day; filter to session recaps |
+Authoritative list lives in `AnalystSources.md`; `video_intel.py --list` prints it. Current state:
+
+| Channel            | Handle           | Format                                  | Filter |
+|--------------------|------------------|-----------------------------------------|--------|
+| StockedUp          | @StockedUp       | 1 evening recap/day                     | none |
+| TraderTV Live      | @TraderTVLive    | 4+ videos/day; session recaps only      | 7 keywords |
+| Kristen Zisek      | @KristenZisek    | occasional earnings Shorts              | none |
+| Blue Cloud Trading | @BlueCloudTrading| ~daily evening Ichimoku scan            | 1 keyword |
 
 ## Steps
 
 ### Step 1 — Discover today's videos
 
-Run the transcript fetch script for both channels:
+Run `video_intel.py` for all registered channels at once:
 
 ```bash
-python3 ~/falcon/dashboard/transcript_fetch.py --channel stocked-up
-python3 ~/falcon/dashboard/transcript_fetch.py --channel tradertv
+python3 ~/.claude/Tools/video_intel.py                    # prior session, every channel
+python3 ~/.claude/Tools/video_intel.py --date 2026-07-27  # explicit date
+python3 ~/.claude/Tools/video_intel.py --channel StockedUp
 ```
 
-If today's date is Saturday or Sunday, use the most recent trading day (last Friday) instead.
+Channels come from `AnalystSources.md` — any `### Name` block with a `**Channel ID:**` line is
+picked up automatically. Run `--list` to see what is registered and which channels are filtered.
+
+The tool handles the **UTC rollover**: evening hosts record after the ET close, so a "07/27" recap
+can carry a published stamp of 07-28. Next-calendar-day publishes up to 10:00 UTC (05:00 ET) count
+as the target session; anything later is genuinely the next session's video.
+
+If today is Saturday or Sunday the default already walks back to the most recent weekday.
 
 If a channel has no videos for the date, note it but continue with whichever channel has content.
 
-For TraderTV Live, the script automatically filters to recap-style videos using title keywords
-(`stock market live`, `recap`, `live trading`, `bear raid`, `open`, `close`). If the filter
-excludes all videos and the user wants a specific video, pass the video ID directly:
+**Title filtering.** Channels that post many videos a day declare a `**Filter keywords:**` line in
+`AnalystSources.md` (backtick-quoted fragments). TraderTV Live posts 4+ videos/day and is filtered
+to recap-style titles; StockedUp and Kristen Zisek are unfiltered. Non-matching videos are reported
+as `skipped (title filter)` on stderr — they are never dropped silently. To take everything anyway:
 
 ```bash
-python3 ~/falcon/dashboard/transcript_fetch.py VIDEO_ID
+python3 ~/.claude/Tools/video_intel.py --all
+```
+
+To pull one specific video regardless of channel, date window or filter, pass its ID:
+
+```bash
+python3 ~/.claude/Tools/video_intel.py VIDEO_ID [VIDEO_ID ...]
 ```
 
 ### Step 2 — Extract transcripts
 
-The script outputs JSON with `transcript` field for each video. Parse this and extract the full
-transcript text. If `has_transcript: false`, the video's captions aren't available yet (live
-stream processed within last 1-2 hours). Note this in the output and skip that video.
+The tool writes one plain-text transcript per video to
+`~/.claude/LifeOS/USER/TRADING/Intelligence/transcripts/` and prints the path for each. Read those
+files for the analysis pass. Naming is `{DATE}_{Channel}_{videoId}.txt`, or
+`{DATE}_direct_{videoId}.txt` for a directly-requested ID.
+
+The cache is authoritative: a transcript already on disk is never refetched (reported as `cached`).
+A video whose captions are not ready yet — live stream processed within the last 1-2 hours — fails
+with `empty (rc=...)` rather than writing a file. Note it in the output and skip that video; retry
+after 7 PM CT.
 
 ### Step 3 — Analyze transcripts for trading intelligence
 
@@ -123,8 +148,8 @@ INTELLIGENCE BASE UPDATED
 
 For each source, append a dated entry to the analyst file:
 
-**StockedUp entries → `~/.claude/PAI/USER/TRADING/Intelligence/Analysts/StockedUp.md`**
-**TraderTV Live entries → `~/.claude/PAI/USER/TRADING/Intelligence/Analysts/TraderTVLive.md`**
+**StockedUp entries → `~/.claude/LifeOS/USER/TRADING/Intelligence/Analysts/StockedUp.md`**
+**TraderTV Live entries → `~/.claude/LifeOS/USER/TRADING/Intelligence/Analysts/TraderTVLive.md`**
 
 Entry format:
 ```markdown
@@ -154,16 +179,16 @@ Trading intelligence extracted from daily market recap videos.
 ```
 
 For significant regime insights, also append to:
-- `~/.claude/PAI/USER/TRADING/Intelligence/MarketRegimes/` (file matching current regime type)
+- `~/.claude/LifeOS/USER/TRADING/Intelligence/MarketRegimes/` (file matching current regime type)
 
 For setup insights, also append to:
-- `~/.claude/PAI/USER/TRADING/Intelligence/Setups/[SetupName].md`
+- `~/.claude/LifeOS/USER/TRADING/Intelligence/Setups/[SetupName].md`
 
 ### Step 6 — Write tomorrow's pre-game notes
 
 Write (or overwrite) a pre-game notes file that MorningGamePlan can pick up:
 
-**File:** `~/.claude/PAI/USER/TRADING/Reviews/{TOMORROW_DATE}-evening-notes.md`
+**File:** `~/.claude/LifeOS/USER/TRADING/Reviews/{TOMORROW_DATE}-evening-notes.md`
 
 ```markdown
 # Evening Notes — {TODAY_DATE} → {TOMORROW_DATE}
@@ -206,7 +231,12 @@ Check if the most recent video is from the prior trading day and offer to proces
 **No captions available:** Output "{video_id} captions not yet available (live stream too recent).
 Try again after 7 PM CT." Do not error — process whichever videos have captions.
 
-**yt-dlp fails:** Log the error, skip the video, continue.
+**fabric fails:** The tool reports `empty (rc=N)`, `timeout`, or `fabric not installed` per video
+and continues to the next. Log it, skip that video, keep going.
+
+**Filter excluded everything:** Output reads `N video(s) for {date}, none matched the title filter`.
+This is NOT the same as a quiet news day — re-run with `--all` before concluding a channel was
+silent, and check whether the channel changed its title convention.
 
 ## Integration with MorningGamePlan
 
@@ -214,7 +244,7 @@ MorningGamePlan Phase 1 (symbol discovery) should check for a same-date evening 
 
 ```bash
 TOMORROW=$(date +%Y-%m-%d)
-NOTES=~/.claude/PAI/USER/TRADING/Reviews/${TOMORROW}-evening-notes.md
+NOTES=~/.claude/LifeOS/USER/TRADING/Reviews/${TOMORROW}-evening-notes.md
 ```
 
 If it exists, the watchlist tickers from that file should be pre-seeded into the game plan's
