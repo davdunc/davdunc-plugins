@@ -52,7 +52,10 @@ The system will:
 - **Platform:** YouTube Shorts
 - **URL:** https://www.youtube.com/@KristenZisek
 - **Channel ID:** UCLqRujjaNTOIbsmc1Bmos3w
-- **Cadence:** Occasional; earnings-driven Shorts (1-3 min)
+- **Cadence:** Near-daily "Market Update: {Weekday} Morning" Shorts, published **07:49–08:30 ET**
+- **⚠️ MORNING channel, not evening.** Pull during MorningGamePlan Phase 1
+  (`video_intel.py --channel Kristen --date $(date +%F)`), not in EveningVideoReview — an evening run
+  fetches the *prior* morning's update, which is already priced in by the time you plan.
 - **Focus:** Earnings breakdowns, consumer sector, accessible retail investor analysis
 - **Key value:** Fast earnings summaries with consumer behavior context. Good for capturing market reactions to consumer staples/retail misses. Connects macro stress (consumer confidence) to individual stock moves.
 - **Tone:** Educational, conversational, accessible
@@ -62,9 +65,15 @@ The system will:
 - **URL:** https://www.youtube.com/@BlueCloudTrading
 - **Channel ID:** UCzAO0HYt7Eb9r5PN56XizVQ
 - **RSS:** https://www.youtube.com/feeds/videos.xml?channel_id=UCzAO0HYt7Eb9r5PN56XizVQ
+- **Host:** George
 - **Cadence:** ~daily, evening (recorded ~18:40 ET); plus weekly members-only sector scan
 - **Format:** Replays CNBC Halftime/Power Lunch clips, then charts every name mentioned. 60-75 min.
 - **Method:** **Ichimoku** (price vs 9/26 period, cloud, chikou span, senkou A vs B) on **weekly first, then daily** + **directional movement index** (ADX9, +DI/-DI). Awards a "blue flag" only when a name meets full bullish Ichimoku criteria on BOTH weekly and daily.
 - **Key value:** A consistent, mechanical bull/bear filter applied to whatever the CNBC panel is talking about — useful as an independent check on a discretionary thesis. The blue-flag count is a fast breadth read.
 - **Tone:** Methodical, level-driven, explicitly avoids "it's cheap" reasoning
-- **Filter keywords:** `technical analysis by blue cloud`
+- **Publishes:** evening piece lands 20:00–21:16 ET (= 00:00+ UTC next day; rollover window applies)
+- **Filter keywords:** `technical analysis by blue cloud`, `half time report`, `stock market analysis`, `power lunch`
+  <!-- 2026-07-28: the single "technical analysis by blue cloud" keyword matched only 1 of 15 recent
+       videos. Their evening titles lead with the guest/thesis ("TOM LEE SAYS...", "Half Time Report
+       - Stock picks") and append the analysis phrase inconsistently. Broadened to match the real
+       title conventions. #shorts clips still fall through, which is intended. -->, ticker + date in title

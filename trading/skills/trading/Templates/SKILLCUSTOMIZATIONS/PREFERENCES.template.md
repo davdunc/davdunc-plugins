@@ -1,6 +1,6 @@
 # Trading Preferences — Template
 
-Copy this file to `~/.claude/PAI/USER/SKILLCUSTOMIZATIONS/Trading/PREFERENCES.md` and fill in your values. Do NOT commit the populated version to a public repo — it contains broker account numbers and risk parameters.
+Copy this file to `~/.claude/LifeOS/USER/SKILLCUSTOMIZATIONS/Trading/PREFERENCES.md` and fill in your values. Do NOT commit the populated version to a public repo — it contains broker account numbers and risk parameters.
 
 ## API Keys
 
@@ -19,8 +19,8 @@ All API keys are stored in `~/.claude/.env`. Reference them by env var name; do 
 ## Account Configuration
 
 ### DAS Trader / Cobra Trading
-- **Live account:** `<your-live-account-id>` (e.g. 1RB16917)
-- **Sim account:** `<your-sim-account-id>` (e.g. TR4425)
+- **Live account:** `<your-live-account-id>` (e.g. 1AB01234)
+- **Sim account:** `<your-sim-account-id>` (e.g. SIM0000)
 - **Trade export path:** `<windows-path-to-Trade_Review>` (e.g. `/mnt/c/Users/<winuser>/OneDrive/Documents/Trade_Review/`)
 
 ### Notion
@@ -30,7 +30,7 @@ All API keys are stored in `~/.claude/.env`. Reference them by env var name; do 
 - **Second Day Plays DB data source:** `collection://<uuid>`
 
 ### Slack
-- **Watchlist channel ID:** `<channel-id>` (e.g. C0B5U2DHB0U)
+- **Watchlist channel ID:** `<channel-id>` (e.g. C01234ABCDE)
 
 ## Trading Preferences
 
@@ -82,3 +82,20 @@ List tickers you've audited and decided not to trade LIVE (e.g. from a multi-wee
 ### Per-Symbol Stop Lockout
 - **Hard stop per ticker: 1R = $<derived> loss** — once a ticker reaches −1R cumulative for the session, that ticker is closed and locked for the rest of the day.
 - Enforcement: DAS-side hotkey/script lockout (configured separately in DAS Trader). PAI side: any review/agent recognizing a per-symbol stop hit MUST refuse to advise further entries on that ticker for the session.
+
+## Placeholder resolution
+
+The skill's workflows and reference docs use `{{PLACEHOLDER}}` tokens so no private
+identifier is committed to the public plugin. Define each in this file; the
+`SKILLCUSTOMIZATIONS` overlay resolves them at run time.
+
+| Placeholder | Meaning | Example |
+|---|---|---|
+| `{{LIVE_ACCOUNT}}` | Live broker account id | `1AB01234` |
+| `{{SIM_ACCOUNT}}` | Simulator account id | `SIM0000` |
+| `{{SLACK_PUBLIC_ID}}` | Slack channel for PUBLIC artifacts (levels, tickers, thesis) | `C01234ABCDE` |
+| `{{SLACK_CLUSTER_ID}}` | Slack channel for agent-to-agent cluster beacons | `C01234FGHIJ` |
+| `{{WINDOWS_HOME}}` | Windows user home as seen from WSL | `/mnt/c/Users/<you>` |
+
+**Never** commit a resolved value back into the plugin. PUBLIC artifacts carry no P&L,
+account id, or R total — see `Reference/ReportingSchema.md` Rule 8.

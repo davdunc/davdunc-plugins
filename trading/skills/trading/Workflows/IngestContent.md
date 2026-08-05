@@ -53,10 +53,10 @@ For each extracted insight:
 
 1. **Determine category:** Setup, Regime, Psychology, or Ticker-specific
 2. **Append to the appropriate intelligence file:**
-   - Setup insights → `~/.claude/PAI/USER/TRADING/Intelligence/Setups/[SetupName].md`
-   - Regime insights → `~/.claude/PAI/USER/TRADING/Intelligence/MarketRegimes/[Regime].md`
-   - Psychology → `~/.claude/PAI/USER/TRADING/Intelligence/Psychology/[Topic].md`
-3. **Store full extract:** `~/.claude/PAI/USER/TRADING/Intelligence/Analysts/[SourceName].md`
+   - Setup insights → `~/.claude/LifeOS/USER/TRADING/Intelligence/Setups/[SetupName].md`
+   - Regime insights → `~/.claude/LifeOS/USER/TRADING/Intelligence/MarketRegimes/[Regime].md`
+   - Psychology → `~/.claude/LifeOS/USER/TRADING/Intelligence/Psychology/[Topic].md`
+3. **Store full extract:** `~/.claude/LifeOS/USER/TRADING/Intelligence/Analysts/[SourceName].md`
 
 **Entry format for each insight:**
 ```markdown

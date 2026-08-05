@@ -4,9 +4,31 @@ description: Evening review of StockedUp and TraderTV Live YouTube videos — tr
 
 # EveningVideoReview Workflow
 
-Runs after market close (4 PM CT / 5 PM ET or later). Discovers today's videos from StockedUp and
-TraderTV Live, pulls transcripts, extracts trading intelligence, and writes a structured digest plus
-a pre-game notes file for tomorrow's MorningGamePlan.
+Runs at **21:30 ET or later** — NOT at the close. Discovers the session's videos across the
+registered channels, pulls transcripts, extracts trading intelligence, and writes a structured
+digest plus a pre-game notes file for tomorrow's MorningGamePlan.
+
+## ⛔ Run time is 21:30 ET, not 17:00 ET
+
+Measured publish times (live RSS, 2026-07-28) — fraction of the session's wanted videos that exist
+by run hour:
+
+| Run at ET | StockedUp | TraderTV | Blue Cloud |
+|-----------|-----------|----------|------------|
+| **17:00** | **0%**    | 100%     | **0%**     |
+| 18:00     | 53%       | 100%     | 0%         |
+| 19:00     | 100%      | 100%     | 28%        |
+| 20:00     | 100%      | 100%     | 57%        |
+| **21:00** | **100%**  | **100%** | **100%**   |
+
+StockedUp publishes in a tight 17:59–18:19 ET band and Blue Cloud's evening piece lands anywhere
+from 18:55 to 21:16 ET. A 17:00 ET run therefore misses **the single most important next-day source
+entirely** and
+returns only TraderTV's intraday clips — a digest that looks like it ran but carries no next-day
+thesis. Blue Cloud at 20:00 ET is 00:00 UTC the following day; `video_intel.py`'s rollover window
+handles that, but only if the run happens late enough to see it at all.
+
+Anything from 21:00 ET on works. 21:30 ET is the default for buffer.
 
 ## Channels
 

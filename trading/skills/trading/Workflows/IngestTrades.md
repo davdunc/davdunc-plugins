@@ -9,7 +9,7 @@ description: Ingest DAS Trader exports and generate structured trade data
 ### 1. Locate Today's Trade Files
 
 ```
-Base path: /mnt/c/Users/davdunc/OneDrive/Desktop/Trade_Review/
+Base path: {{WINDOWS_HOME}}/OneDrive/Desktop/Trade_Review/
 Today's folder: YYYY-MM/YYYY-MM-DD/
 ```
 
@@ -28,7 +28,7 @@ Read `pnl-by-position-*.csv` (or screenshot if CSV missing). Extract:
 
 | Field | Source |
 |-------|--------|
-| Account | ACCID column (1RB16917 = live, TR4425 = sim) |
+| Account | ACCID column ({{LIVE_ACCOUNT}} = live, {{SIM_ACCOUNT}} = sim) |
 | Symbol | Symbol column |
 | Shares | Shares column (total traded) |
 | Realized P&L | Realized column |
@@ -36,8 +36,8 @@ Read `pnl-by-position-*.csv` (or screenshot if CSV missing). Extract:
 | Net P&L | P & L column |
 
 **Calculate totals:**
-- Live P&L (1RB16917 rows)
-- Sim P&L (TR4425 rows)
+- Live P&L ({{LIVE_ACCOUNT}} rows)
+- Sim P&L ({{SIM_ACCOUNT}} rows)
 - Total P&L
 
 ### 3. Parse Trade-by-Trade Timeline
@@ -62,4 +62,4 @@ Present:
 ### 6. Save to Reviews Archive
 
 After generating the review, save a summary to:
-`~/.claude/PAI/USER/TRADING/Reviews/YYYY-MM-DD.md`
+`~/.claude/LifeOS/USER/TRADING/Reviews/YYYY-MM-DD.md`

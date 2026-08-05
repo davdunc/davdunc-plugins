@@ -6,7 +6,7 @@ description: Run rules engine against a given trading day and report violations
 
 **Triggers:** "compliance check", "rule check", "did I break any rules"
 
-Runs the `falcon-stats compliance` rules engine against a single trading day. Loads executions + round-trips from canonical SQLite (`~/Projects/Falcon/trades.db`), evaluates against the rules at `~/.claude/PAI/USER/TRADING/Rules.yaml`, and prints any violations.
+Runs the `falcon-stats compliance` rules engine against a single trading day. Loads executions + round-trips from canonical SQLite (`~/Projects/Falcon/trades.db`), evaluates against the rules at `~/.claude/LifeOS/USER/TRADING/Rules.yaml`, and prints any violations.
 
 ## Voice + Text Notification
 
@@ -35,7 +35,7 @@ falcon-stats compliance <YYYY-MM-DD>
 
 Flags:
 - `--db PATH` — override `$FALCON_DB` (default `~/Projects/Falcon/trades.db`)
-- `--rules PATH` — override `$FALCON_RULES_YAML` (default `~/.claude/PAI/USER/TRADING/Rules.yaml`)
+- `--rules PATH` — override `$FALCON_RULES_YAML` (default `~/.claude/LifeOS/USER/TRADING/Rules.yaml`)
 - `--json` — emit violations as a JSON list
 
 Exit code: `0` if no violations, `1` if any.
@@ -81,4 +81,4 @@ If `--json` was used, present the JSON list verbatim and follow with the human s
 
 ### 5. Rules File Location
 
-Authoritative rules: `~/.claude/PAI/USER/TRADING/Rules.yaml`. Schema includes `banned_tickers`, `per_symbol_loss_cap`, `daily_loss_cap`, `max_round_trips_per_day`, `swing_trade_allowed`, and `session_windows`. Edit there to change limits — do NOT inline-override in this workflow.
+Authoritative rules: `~/.claude/LifeOS/USER/TRADING/Rules.yaml`. Schema includes `banned_tickers`, `per_symbol_loss_cap`, `daily_loss_cap`, `max_round_trips_per_day`, `swing_trade_allowed`, and `session_windows`. Edit there to change limits — do NOT inline-override in this workflow.

@@ -18,7 +18,7 @@ Determine what the user is searching for:
 
 ### 2. Search the Intelligence Base
 
-Base path: `~/.claude/PAI/USER/TRADING/Intelligence/`
+Base path: `~/.claude/LifeOS/USER/TRADING/Intelligence/`
 
 Search strategy:
 1. Grep for keywords across relevant directories
@@ -36,7 +36,7 @@ For each match:
 
 If the query relates to a specific setup or ticker:
 - Also check `PlaybookSetups.md` for the formal setup definition
-- Check `~/.claude/PAI/USER/TRADING/Reviews/` for historical trades matching this pattern
+- Check `~/.claude/LifeOS/USER/TRADING/Reviews/` for historical trades matching this pattern
 - Check TELOS WISDOM.md for personal lessons related to the topic
 
 ### 5. Synthesize
