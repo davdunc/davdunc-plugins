@@ -14,23 +14,23 @@ ln -s "$PWD/skills/trading" ~/.claude/skills/Trading
 
 ## Configuration
 
-The skill expects user-specific configuration in `~/.claude/PAI/USER/SKILLCUSTOMIZATIONS/Trading/`. Copy the template to bootstrap:
+The skill expects user-specific configuration in `~/.claude/LifeOS/USER/SKILLCUSTOMIZATIONS/Trading/`. Copy the template to bootstrap:
 
 ```bash
-mkdir -p ~/.claude/PAI/USER/SKILLCUSTOMIZATIONS/Trading
+mkdir -p ~/.claude/LifeOS/USER/SKILLCUSTOMIZATIONS/Trading
 cp ~/.claude/skills/Trading/Templates/SKILLCUSTOMIZATIONS/PREFERENCES.template.md \
-   ~/.claude/PAI/USER/SKILLCUSTOMIZATIONS/Trading/PREFERENCES.md
+   ~/.claude/LifeOS/USER/SKILLCUSTOMIZATIONS/Trading/PREFERENCES.md
 # Edit PREFERENCES.md with your broker accounts, R-CONFIG, banned tickers, etc.
 ```
 
 Initialize the intelligence base:
 
 ```bash
-mkdir -p ~/.claude/PAI/USER/TRADING/Intelligence/{Setups,Analysts,MarketRegimes,Psychology}
-mkdir -p ~/.claude/PAI/USER/TRADING/Reviews
+mkdir -p ~/.claude/LifeOS/USER/TRADING/Intelligence/{Setups,Analysts,MarketRegimes,Psychology}
+mkdir -p ~/.claude/LifeOS/USER/TRADING/Reviews
 # Optional: copy the seed Offsides-Short setup template
 cp ~/.claude/skills/Trading/Templates/Intelligence/Setups/OffsidesShort.md \
-   ~/.claude/PAI/USER/TRADING/Intelligence/Setups/
+   ~/.claude/LifeOS/USER/TRADING/Intelligence/Setups/
 ```
 
 ## Required Applications
@@ -119,7 +119,7 @@ skills/trading/
 ├── Config/                           # FinvizColumnSchema.json, youtube-channels.json
 └── Templates/
     ├── SKILLCUSTOMIZATIONS/
-    │   └── PREFERENCES.template.md   # Copy to ~/.claude/PAI/USER/SKILLCUSTOMIZATIONS/Trading/
+    │   └── PREFERENCES.template.md   # Copy to ~/.claude/LifeOS/USER/SKILLCUSTOMIZATIONS/Trading/
     └── Intelligence/
         └── Setups/OffsidesShort.md   # Scaled-SS template for EXTREME z-score gaps
 ```

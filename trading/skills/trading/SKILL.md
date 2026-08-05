@@ -10,7 +10,7 @@ Intraday momentum trading intelligence system for davdunc. Integrates DAS Trader
 ## Customization
 
 **Before executing, check for user customizations at:**
-`~/.claude/PAI/USER/SKILLCUSTOMIZATIONS/Trading/`
+`~/.claude/LifeOS/USER/SKILLCUSTOMIZATIONS/Trading/`
 
 ## Voice Notification
 
@@ -31,10 +31,12 @@ Intraday momentum trading intelligence system for davdunc. Integrates DAS Trader
 
 ## Core Paths
 
-- **DAS Trader exports:** `/mnt/c/Users/davdunc/OneDrive/Desktop/Trade_Review/`
-- **Intelligence base:** `~/.claude/PAI/USER/TRADING/Intelligence/`
-- **Historical reviews:** `~/.claude/PAI/USER/TRADING/Reviews/`
-- **TELOS integration:** `~/.claude/PAI/USER/TELOS/`
+- **DAS Trader exports:** `{{WINDOWS_HOME}}/OneDrive/Documents/Morning_Review/YYYY-MM/YYYY-MM-DD/`
+  — one folder per session date. Note the broker export stamps `TradeDate` one session
+  early; `ExecutionTime` is the authority (see `Reference/ReportingSchema.md` Rule 2).
+- **Intelligence base:** `~/.claude/LifeOS/USER/TRADING/Intelligence/`
+- **Historical reviews:** `~/.claude/LifeOS/USER/TRADING/Reviews/`
+- **TELOS integration:** `~/.claude/LifeOS/USER/TELOS/`
 - **Notion workspace:** TeamJaDaDa — David Duncan Daily Game Plan database
 
 ## Workflow Routing
@@ -86,11 +88,14 @@ User: "ingest this video https://youtube.com/watch?v=xyz"
 
 ## Quick Reference
 
-- **Accounts:** 1RB16917 (live/Cobra), TR4425 (sim)
+- **Accounts:** {{LIVE_ACCOUNT}} (live/Cobra), {{SIM_ACCOUNT}} (sim)
 - **Time zone:** Central — market open 8:30 CT
 - **Platform:** DAS Trader Pro + ThinkorSwim (Bookmap)
 - **Strategies:** Momentum — gaps, breakouts, VWAP, ORB, 9EMA x VWAP/21EMA
-- **Risk:** ~$28K account, 1% per trade max risk
+- **Risk:** ~$28K account. **1R = $28 (0.1% of working capital)** — LIVE. SIM 1R = $75.
+  Per-symbol max −1R, daily max −3R. **`PREFERENCES.md` R-CONFIG is the only authority**;
+  never hard-code a dollar figure here. *(Corrected 2026-08-05 from a stale "1% per trade",
+  which implied $280 and contradicted every review ever scored.)*
 
 **Full Documentation:**
 - Setup definitions: `PlaybookSetups.md`

@@ -18,9 +18,9 @@ From the most recent daily or weekly review, extract:
 ### 2. Check for Duplicates
 
 Read existing TELOS files to avoid duplicating lessons:
-- `~/.claude/PAI/USER/TELOS/WISDOM.md`
-- `~/.claude/PAI/USER/TELOS/CHALLENGES.md`
-- `~/.claude/PAI/USER/TELOS/GOALS.md`
+- `~/.claude/LifeOS/USER/TELOS/WISDOM.md`
+- `~/.claude/LifeOS/USER/TELOS/CHALLENGES.md`
+- `~/.claude/LifeOS/USER/TELOS/GOALS.md`
 
 If a lesson is a refinement of an existing entry, update rather than duplicate.
 
@@ -34,7 +34,7 @@ bun ~/.claude/skills/Telos/Tools/UpdateTelos.ts "[FILE]" "[CONTENT]" "[DESCRIPTI
 ### 4. Also Update Trading Intelligence
 
 If the lesson relates to a specific setup or pattern:
-- Append to the relevant intelligence file in `~/.claude/PAI/USER/TRADING/Intelligence/`
+- Append to the relevant intelligence file in `~/.claude/LifeOS/USER/TRADING/Intelligence/`
 - This keeps personal experience alongside analyst content
 
 ### 5. Confirm

@@ -1,140 +1,156 @@
 # Reporting Schema — The One Contract
 
-This is the **single source of truth** for how trading results are measured,
-graded, and compared. Every workflow that produces a report (MorningGamePlan,
-DailyReview, WeeklyReview) renders these and only these — so day-over-day
-results line up and support data-driven decisions instead of drifting.
+**Status:** canonical for every artifact produced by the Trading skill.
+**Supersedes:** the copy at `davdunc-plugins/trading/skills/trading/Reference/ReportingSchema.md`,
+which lives in a plugin that is **not enabled** and therefore never loads.
 
-It is backed by code in `tradekit` (`tradekit.reporting`), which owns the math
-and persistence. When a workflow and this doc disagree, **the code wins** —
-update both to match.
+Derived 2026-08-05 from that document plus the consistency audit at
+`USER/TRADING/Reviews/2026-08-05-consistency-audit.md`, which measured **15 mutually
+incompatible comparison-table variants** across shipped reviews.
 
-## Role boundary: tradekit ↔ falcon
+## Rule 0 — enforceability
 
-- **falcon** = *deterministic* evaluation. `falcon-stats ingest` is the
-  authoritative P&L / win-rate / equity-curve source. Those numbers are never
-  recomputed here — they are embedded verbatim (the P&L Summary row).
-- **tradekit** = *unstructured → structured*. It takes news, filings, analyst
-  commentary, chart screenshots, and the narrative of the day and produces the
-  **graded, ordered, comparable** records in this schema (setup grades,
-  discipline score, patterns, lessons). Those structured documents are the
-  hand-off back to falcon for downstream deterministic use.
+**Every rule below carries an enforcement point. A rule with no enforcer is marked
+`ASPIRATIONAL` and MUST NOT be used to score a review.**
 
-Practical rule: if a number is deterministic (came off the broker/exports),
-falcon produces it and tradekit carries it through unchanged; if a result
-requires judgment over unstructured inputs, tradekit produces it as a structured
-field on the ladder/rubric below.
+This exists because the prior contract deferred to `tradekit.reporting` / `tradekit cards`
+as its tiebreaker, and that code was never written. A contract whose arbiter does not exist
+cannot resolve disagreement, so every workflow silently became its own authority. Do not
+repeat that: if it is not executable, say so in the line itself.
 
-## Grade ladder (one ladder, five rungs)
+| Enforcer | Status |
+|---|---|
+| `falcon-stats ingest` / `trades` | ✅ exists |
+| `das_flat_check.py` | ✅ exists, on a timer |
+| `tradekit cards *` | ❌ **does not exist** — anything depending on it is ASPIRATIONAL |
+| `tradekit blotter` | ⚠️ code exists, **not wired to CLI** |
 
-`A · B · C · D · F` — used identically for *setup quality* (the screener's 0–100
-composite) and *executed-trade quality*. A "C" means the same thing on both
-sides.
+## Rule 1 — one source of truth per fact
 
-| Grade | 0–100 score | Meaning |
-|-------|-------------|---------|
-| A | ≥ 80 | Clean, by-the-book (setup or execution) |
+| Fact | Authority | Never |
+|---|---|---|
+| Whether/when a trade happened | `falcon-trades` DynamoDB | Reviews folder, export folders |
+| Fill price, size, **time** | Cobra `Account _ Trade Execution` → `ExecutionTime` | `TradeDate`, `Activity` export |
+| Realized P&L, round-trips | `falcon-stats ingest` — carried verbatim | recomputed by hand |
+| Live price | DAS CMD API | TradingView outside RTH |
+| Historical bars | Massive/Polygon flat files | DAS |
+| 1R and risk limits | `PREFERENCES.md` R-CONFIG **verified against trader-desk S3** | `SKILL.md`, `RulesOfEngagement.md` |
+| Float / share data | Finviz | — |
+
+**Deterministic vs judgment:** if a number came off the broker, falcon produces it and the
+review carries it through **unchanged**. If it requires judgment over unstructured input
+(grade, discipline, pattern), the review produces it against the rubrics below.
+
+## Rule 2 — the trade date is `ExecutionTime`
+
+Cobra stamps `TradeDate` **one session earlier** than the actual trading day. Verified twice
+independently on 2026-08-05 (07-31 and 08-04 exports).
+
+Validation, mandatory before any review is written: **every fill price must fall inside that
+day's high/low.** A fill outside the range means the date is wrong, not the tape.
+
+## Rule 3 — R-units
+
+Format: `+2.3R ($644)` — R first, dollars in parentheses.
+`1R = abs(entry − stop) × shares`.
+
+**When `planned_stop` is absent, render `R n/a`. Never fabricate.** On 2026-07-30, 14 of 16
+round-trips had no stop order; an earlier build manufactured an R for all of them and
+reported −0.5R on a +$274 day.
+
+**1R = LIVE $28 / SIM $75**, sourced from the `PREFERENCES.md` R-CONFIG. That block is the
+only authority; no other file may hard-code a dollar figure.
+
+> **Resolved 2026-08-05 (operator decision).** `SKILL.md` and `RulesOfEngagement.md` had
+> carried **$280** (1% of $28K) against PREFERENCES' **$28** (0.1%) — a 10× split from a
+> single decimal place. $28 is correct and matches every review scored to date. All three
+> files plus `MorningGamePlan.md`'s worked example were corrected. Verify against the
+> trader-desk S3 copy when next reachable; this machine is documented to drift.
+
+## Rule 4 — one grade ladder
+
+`A · B · C · D · F`, identical for setup quality and executed-trade quality.
+
+| Grade | Score | Meaning |
+|---|---|---|
+| A | ≥ 80 | Clean, by the book |
 | B | ≥ 65 | Right idea, minor issues |
-| C | ≥ 50 | Acceptable but flawed (churn, early exits, weak setup) |
-| D | ≥ 35 | Wrong thesis or a real discipline slip |
+| C | ≥ 50 | Acceptable but flawed |
+| D | ≥ 35 | Wrong thesis or real discipline slip |
 | F | < 35 | Revenge trade / averaging down / no plan |
 
-> Prior drift this fixes: the screener used A/B/C/F (no D) while reviews used
-> A/B/C/D/F. Same letter, different meaning. Now unified.
+## Rule 5 — one discipline rubric, summing to 10
 
-## R-units (the risk lingua franca)
+Scored per criterion, never eyeballed. **The review must show the checklist, not just the
+total.** (Both 07-30 and 08-04 reported a total with no per-criterion breakdown.)
 
-All stops, targets, daily limits, and recap numbers are **R-units**, dollar in
-parens: `+2.3R ($644)`. 1R = `abs(entry − stop) × shares`. When a trade has no
-recorded `planned_stop`, R is **unreliable** — render `R n/a`, never fabricate.
-Dollars derive from the R-CONFIG (`r_dollars`, `daily_max_r`, `per_trade_max_r`).
+| # | Criterion | Pts |
+|---|---|:--:|
+| 1 | Followed the published game plan, not screen impulses | 2 |
+| 2 | Only playbook setups | 1 |
+| 3 | Honored stops; no averaging down | 2 |
+| 4 | No revenge trading | 1 |
+| 5 | Paused / reset after losses | 1 |
+| 6 | Took the thesis trade with conviction sizing | 1 |
+| 7 | Conviction sizing, not scattered small lots | 1 |
+| 8 | Account separation — LIVE served the plan | 1 |
+| | **Total** | **10** |
 
-## Discipline rubric (one rubric, sums to 10)
+## Rule 6 — canonical comparison columns
 
-Reproducible from a per-criterion checklist — not eyeballed.
-
-| Criterion | Points |
-|-----------|:------:|
-| Followed the published game plan (not screen impulses) | 2 |
-| Only playbook setups (Offsides / Fashionably Late) | 1 |
-| Honored stops; no averaging down | 2 |
-| No revenge trading | 1 |
-| Paused / reset after losses | 1 |
-| Took the thesis trade live with conviction sizing | 1 |
-| Conviction sizing, not scattered small lots | 1 |
-| Account separation — LIVE served the plan, not a parallel impulse book | 1 |
-
-> Prior drift this fixes: the rubric listed 7 criteria; "account separation" was
-> scored in practice but missing from the list. It is now a first-class
-> criterion and the weights sum to exactly 10.
-
-## Canonical multi-day comparison columns
-
-Every comparison table — DailyReview "Compare to prior days", DailyReview
-"Multi-Day Trend", WeeklyReview "Daily Breakdown" — uses **these columns, in
-this order**. No variants.
+Every multi-day table — DailyReview "Compare to prior days", "Multi-Day Trend", WeeklyReview
+"Daily Breakdown" — uses **exactly these columns in this order**:
 
 ```
 | Date | LIVE P&L | LIVE RTs | SIM P&L | Discipline | Avg Grade | Key Pattern |
 ```
 
-- **LIVE RTs** = round-trips (from `falcon-stats ingest`), never raw fill count.
-- **Discipline** = `N/10` from the rubric above.
-- **Avg Grade** = mean of the day's executed-trade grades on the one ladder.
+- `LIVE RTs` = **round-trips**, never raw fill count. `LIVE Execs` is banned.
+- `Discipline` = `N/10` from Rule 5.
+- `Avg Grade` = mean of executed-trade grades on the Rule 4 ladder.
 
-## Persistence (NoSQL-native, object-storage-archivable)
+**`Workflows/DailyReview.md:310` currently templates `LIVE Execs` and must be corrected** —
+it contradicts both this rule and its own Step 0.
 
-Each report is one self-contained JSON document:
+## Rule 7 — file naming
 
-- **Game plan** → `record_type=GAMEPLAN`, `pk=GAMEPLAN#GLOBAL`, `sk=<date>`
-- **Daily card** → `record_type=DAILYCARD`, `pk=DAILYCARD#GLOBAL`, `sk=<date>`
-  (one document per day, covering **both** accounts)
-
-The same item maps onto DynamoDB (`pk`/`sk`, like `falcon-stats`) and archives
-verbatim to object storage at `record_type/scope/date.json`. Comparison reads
-*records*, not prose.
-
-## Ingest (deterministic + unstructured → one card)
-
-`tradekit cards ingest` is the loop-closer. It takes the **deterministic**
-falcon output and the **structured judgment** the review produced, and writes
-one comparable daily card.
-
-```bash
-tradekit cards ingest \
-  --falcon-stats falcon.json \      # falcon-stats ingest output (P&L, verbatim)
-  --narrative narrative.json \      # grades, discipline, patterns, lessons
-  --date 2026-06-11
+```
+Reviews/YYYY-MM-DD-gameplan.md          game plan
+Reviews/YYYY-MM-DD-review.md            daily report card
+Reviews/YYYY-MM-DD-blotter.html         round-trip blotter
+Reviews/YYYY-MM-DD-evening-notes.md     evening video review
+Reviews/YYYY-MM-DD-<topic>.md           anything else
 ```
 
-- **`--falcon-stats`** — a JSON list (or `{account: stat}` map) of per-account
-  DailyStats. Field names are alias-tolerant; the numbers are carried through
-  unchanged. `-` reads stdin. When falcon reports a win rate but not win/loss
-  counts, the counts are reconstructed from `win_rate × round_trips`.
-- **`--narrative`** — the structured judgment the workflow assembles (all keys
-  optional):
+Lowercase, ISO date first, one convention. The `REVIEW-YYYY-MM-DD.md` form is **deprecated**;
+existing files stay, new ones use the above.
 
-  ```json
-  {
-    "headline": "...", "market_regime": "...", "one_percent_result": "...",
-    "trades": [{"ticker","account","direction","setup","shares",
-                "realized_pnl","r_multiple","grade","covariance","verdict"}],
-    "discipline": {"followed_game_plan": true, "honored_stops": true, "...": true},
-    "patterns": ["..."], "lessons": ["..."],
-    "monitored_not_traded": ["..."], "behavioral_contract": "..."
-  }
-  ```
+## Rule 8 — channel routing by privacy class
 
-  `discipline` accepts either rubric **flags** (as above) or a pre-scored
-  `{"met": {...}, "total": N}` block — either way the total is recomputed from
-  `met`, never trusted blindly.
+| Class | Contains | Goes to | Never |
+|---|---|---|---|
+| **PUBLIC** | levels, tickers, thesis | Slack `#general`, Notion | any P&L, account id, R total |
+| **PRIVATE** | P&L, R, discipline, account ids | Google Drive, Discord report-card forum | Slack, Notion |
+| **LOCAL** | full detail | `USER/TRADING/Reviews/` | — |
 
-## CLI
+Every artifact carries a footer declaring its class. Public versions strip methodology
+pedagogy entirely. Discord report-card is a **forum** — new posts need `thread_name`.
 
-```bash
-tradekit cards ingest --falcon-stats f.json --narrative n.json  # build + persist a card
-tradekit cards trend  --since 2026-06-01            # canonical multi-day table
-tradekit cards weekly --since 2026-06-08            # weekly rollup
-tradekit cards show   2026-06-11                    # one daily card
-tradekit cards export --record-type DAILYCARD       # JSONL bulk/archive
-```
+## Rule 9 — no-trade days are still recorded
+
+A session with no trades produces a game plan stating the posture and **is not published to
+public channels**. Absence of trades is data; absence of a record is a gap.
+
+## Remediation checklist
+
+1. [ ] Reconcile 1R against trader-desk S3; propagate to all three files — **blocks everything**
+2. [ ] Choose one canonical Trading skill copy; make the other a pointer
+3. [x] Install this schema into the runtime copy
+4. [ ] Cite it from local MorningGamePlan / DailyReview / WeeklyReview
+5. [ ] Fix `DailyReview.md:310` → `LIVE RTs`, add `Avg Grade`
+6. [ ] Fix `SKILL.md` Core Paths (wrong Windows user and folder) and the "1%" figure
+7. [ ] Wire `blotter` into the tradekit CLI
+8. [ ] Build `tradekit cards`, or mark that section ASPIRATIONAL in both copies
+9. [ ] Move private specifics into `SKILLCUSTOMIZATIONS/Trading/EXTEND.yaml` so there is no
+       remaining reason to fork the skill
+10. [ ] Add a CI check to `davdunc-plugins` asserting the canonical header string

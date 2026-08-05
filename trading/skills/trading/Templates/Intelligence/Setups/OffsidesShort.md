@@ -66,8 +66,8 @@ This setup works on BOTH accounts when the plan pre-assigns scope:
 ## Reference Trades
 | Date | Symbol | Account | Z-score | Legs | Realized | Notes |
 |------|--------|---------|---------|------|----------|-------|
-| 2026-06-02 | MRVL | SIM TR4425 | +5.34σ | 3-leg SS / 3-leg cover | +$32.85 | Template trade — cleanest reference |
-| 2026-06-02 | MRVL | LIVE 1RB16917 | +5.34σ | 20 round-trip fills | +$11.86 | Same thesis, larger size, more iterative |
+| 2026-06-02 | MRVL | SIM {{SIM_ACCOUNT}} | +5.34σ | 3-leg SS / 3-leg cover | +$32.85 | Template trade — cleanest reference |
+| 2026-06-02 | MRVL | LIVE {{LIVE_ACCOUNT}} | +5.34σ | 20 round-trip fills | +$11.86 | Same thesis, larger size, more iterative |
 
 ## Linked Memories
 - [[das-sell-opens-short-not-close]] — Route SMRTL vs REB25 matters

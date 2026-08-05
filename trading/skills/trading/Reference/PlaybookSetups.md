@@ -28,18 +28,6 @@
 - **Confirmation required:** Volume spike (>2× recent average) OR ATR expansion on the cross candle — without one of these the cross is noise
 - **Disqualifiers:** EXTREME z-score (>3) on the long side; cross before 10:00 ET
 
-### 15-Minute VWAP Sandwich (9-EMA / 34-SMA straddle of NY VWAP)
-- **Timeframe:** 15-minute, regular session
-- **Trigger (state, not event):** on the 15-minute chart the 9-EMA and the 34-SMA close on **opposite sides** of the New York session VWAP (anchored to the 09:30 ET open, reset daily)
-  - *Bullish sandwich:* `9-EMA > VWAP > 34-SMA` — fast average has led back above VWAP while the slower one still lags below (early uptrend / VWAP-reclaim building)
-  - *Bearish sandwich:* `34-SMA > VWAP > 9-EMA` — the inverse (early downtrend building)
-- **Entry:** Do not enter on the sandwich alone — it's a *state* that flags a stock to watch. Enter when it resolves into the Fashionably Late 9-EMA × VWAP cross (see above), with the usual volume/ATR confirmation
-- **Stop:** Opposite side of VWAP + ATR buffer (same frame as FL)
-- **Target:** Next key level, R3/S3 Camarilla, or ATR extension
-- **Relationship to Fashionably Late:** the sandwich is the setup *state*; FL is the *trigger event* it resolves into. Screen for the sandwich → arm for the FL cross
-- **Disqualifiers:** pre-10:00 ET (open volatility); sandwich with the 9-EMA/34-SMA spread < ~0.1% of VWAP (too compressed to be meaningful — noise)
-- **Detection:** `tradekit.analysis.setups.detect_vwap_sandwich(df)` on 15m bars (`--source=massive`, `interval="15m"`); direction-agnostic, returns bias from which average is above VWAP
-
 ### Breakout (Key Level)
 - **Trigger:** Stock approaching significant resistance/support with building volume
 - **Entry:** On break of level with volume > 2x average

@@ -75,7 +75,7 @@ Full validated column ID range: 0–150. See JSON schema at:
   - Intraday candles (1min, 5min): for pattern analysis
 - **Key fields:** Open, High, Low, Close, Volume per period
 - **Used for:** Camarilla pivot calculation, ATR computation, trend identification
-- **API key location:** `~/.claude/PAI/USER/SKILLCUSTOMIZATIONS/Trading/PREFERENCES.md`
+- **API key location:** `~/.claude/LifeOS/USER/SKILLCUSTOMIZATIONS/Trading/PREFERENCES.md`
 
 ## SEC EDGAR
 - **Purpose:** Company filings for catalyst identification
@@ -91,7 +91,7 @@ Full validated column ID range: 0–150. See JSON schema at:
 - **Catalyst keywords:** acquisition, merger, partnership, offering, FDA, approval, contract, restructuring, bankruptcy, investigation
 
 ## DAS Trader Exports
-- **Path:** `/mnt/c/Users/davdunc/OneDrive/Desktop/Trade_Review/YYYY-MM/YYYY-MM-DD/`
+- **Path:** `{{WINDOWS_HOME}}/OneDrive/Desktop/Trade_Review/YYYY-MM/YYYY-MM-DD/`
 - **Files:**
   - `Trades.csv` — Individual executions (TradeID, Account, B/S, Symbol, Qty, Price, Time)
   - `Orders.csv` — Order history
@@ -100,4 +100,4 @@ Full validated column ID range: 0–150. See JSON schema at:
   - `pnl-by-position-*.jpg` — P&L screenshot
   - `positions-*.csv` — Position details
   - `*.jpg` — Chart screenshots per ticker
-- **Accounts:** 1RB16917 (live/Cobra), TR4425 (sim)
+- **Accounts:** {{LIVE_ACCOUNT}} (live/Cobra), {{SIM_ACCOUNT}} (sim)

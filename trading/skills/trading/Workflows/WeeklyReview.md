@@ -15,7 +15,7 @@ description: Aggregate weekly trading data — P&L, patterns, discipline trend, 
 Prefer the **persisted records**: `tradekit cards trend --since <Mon> --until <Fri>`
 reads the structured daily cards for the week (and `tradekit cards weekly`
 produces the full rollup). Fall back to the prose reviews in
-`~/.claude/PAI/USER/TRADING/Reviews/` only if a day was never ingested.
+`~/.claude/LifeOS/USER/TRADING/Reviews/` only if a day was never ingested.
 
 If records don't exist for some days, ingest trades for those days first.
 
