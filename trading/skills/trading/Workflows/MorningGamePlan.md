@@ -86,7 +86,7 @@ Linked memory: `[[falcon-cluster-agent-sync]]`, `[[channel-topology]]`.
 
 Run as part of the news-pull step:
 ```bash
-~/falcon/dashboard/.venv/bin/python ~/falcon/dashboard/dilution_scan.py
+~/falcon/dashboard/.venv-gameplan/bin/python ~/falcon/dashboard/dilution_scan.py
 ```
 
 The script pulls Polygon news (last 24h) and flags any ticker whose recent news matches keywords across two categories:
@@ -129,7 +129,7 @@ Linked memory: `[[rs-atm-combo-setup]]`.
 
 Run before Phase 6 synthesis:
 ```bash
-~/falcon/dashboard/.venv/bin/python ~/falcon/dashboard/spy_gex_compute.py --max-dte 14
+~/falcon/dashboard/.venv-gameplan/bin/python ~/falcon/dashboard/spy_gex_compute.py --max-dte 14
 ```
 
 Paste the markdown output into the macro section. The regime label + tape-read implication determines how to grade today's setups:
