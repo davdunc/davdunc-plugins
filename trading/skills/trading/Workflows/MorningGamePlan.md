@@ -59,11 +59,41 @@ session.**
 |---|---|---|
 | 1 | **HEADER** | date · build time · intel-layer source + transcript count · R basis (LIVE/SIM) · daily max · max LIVE tickers · flat-check time |
 | 2 | **MACRO** | GEX snapshot **or the literal word UNAVAILABLE with the reason** · index levels · today's calendar |
-| 3 | **THESIS TRADE** | exactly **ONE** named `TICKER SIDE` · trigger · stop · target in R · one-sentence edge · setup tag |
-| 4 | **WATCHLIST** | table with fixed columns `Ticker \| Bias \| Trigger \| Status \| Kill (CT)` |
+| 3 | **THESIS TRADE** | exactly **ONE** named `TICKER SIDE` · trigger · stop · target in R · one-sentence edge · setup tag. **`WAIT — no premarket thesis` is a valid entry**; do not manufacture one |
+| 4 | **WATCHLIST** | three labelled groups — **ACTIVE**, **DORMANT**, **WATCH-ONLY** — each a table with fixed columns `Ticker \| Bias \| Trigger \| Status \| Kill (CT)`. Admission gated per the rule below |
 | 5 | **VALIDITY GATE** | which names pass, which fail, and **why** — named, not implied |
 | 6 | **RULES** | **exactly 3 bullets.** Not two, not five |
 | 7 | **FOOTER** | privacy class + channel manifest (which channels got which version) |
+
+### Watchlist admission — the premarket movement gate
+
+**If a name is not MOVING premarket, it comes OFF the active list.** In-play means
+premarket movement, RVOL, or a live catalyst. **Dead-flat premarket = DORMANT, not listed.**
+A dormant name returns only if it **wakes at the open** — reclaims its trigger, **and** its
+group confirms, **and** real volume shows up. Operator rule, called live 2026-08-11.
+Linked memory: `[[feedback-watchlist-premarket-movement-gate]]`.
+
+Build the watchlist **after** the premarket read. Movement is an **admission test**, not a
+column. Group the board explicitly:
+
+| Group | Meaning |
+|---|---|
+| **ACTIVE** | moving, or has a live catalyst. These are tradeable today |
+| **DORMANT** | trigger exists but the name is flat. **Revisit only if it wakes at the open** |
+| **WATCH-ONLY** | earnings movers, off-thesis. **Open-only, no premarket entries** |
+
+**Thin prints are not movement.** A quote on 311 shares is noise, not a signal — state the
+premarket volume beside any premarket price, and if it is not credible say so.
+
+**Worked example (2026-08-11):** XOM sat at 159.2 under its 160.40 trigger with XLE/OXY/USO
+all flat — the whole energy thesis was pulled premarket and the active list fell to two
+names, SPY (WAIT) and GLD (runner). **Counter-example (2026-08-10):** the plan carried 16
+names including V at −0.09% on **311 shares** and DKNG at 0.00% on 8.7K. Under this rule
+that board was about four names.
+
+**Why:** a long list of untriggered, unmoving names is not preparation — it is a menu, and
+a menu invites substitution when the real setup does not fire. See
+`[[feedback-activity-over-patience]]`.
 
 **Constraints:**
 - **Sections never reorder, and are never renamed.** "Rules in force" ≠ "RULES"; use the
