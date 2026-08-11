@@ -50,6 +50,60 @@ Rule 0 of that schema applies here: **a rule with no live enforcer is ASPIRATION
 not be used to score anything.** `tradekit cards *` does not exist as of 2026-08-05 — do not
 call it or promise its output.
 
+## ⛔ HARD RULE: Game Plan Skeleton (local artifact)
+
+**`Reviews/YYYY-MM-DD-gameplan.md` MUST contain these seven sections, in this order, every
+session.**
+
+| # | Section | Must contain |
+|---|---|---|
+| 1 | **HEADER** | date · build time · intel-layer source + transcript count · R basis (LIVE/SIM) · daily max · max LIVE tickers · flat-check time |
+| 2 | **MACRO** | GEX snapshot **or the literal word UNAVAILABLE with the reason** · index levels · today's calendar |
+| 3 | **THESIS TRADE** | exactly **ONE** named `TICKER SIDE` · trigger · stop · target in R · one-sentence edge · setup tag |
+| 4 | **WATCHLIST** | table with fixed columns `Ticker \| Bias \| Trigger \| Status \| Kill (CT)` |
+| 5 | **VALIDITY GATE** | which names pass, which fail, and **why** — named, not implied |
+| 6 | **RULES** | **exactly 3 bullets.** Not two, not five |
+| 7 | **FOOTER** | privacy class + channel manifest (which channels got which version) |
+
+**Constraints:**
+- **Sections never reorder, and are never renamed.** "Rules in force" ≠ "RULES"; use the
+  heading above. A renamed section is a new section and breaks week-over-week comparison.
+- **Never add ad-hoc top-level sections.** Anything extra is a subsection under one of the
+  seven. If it fits nowhere, it does not belong in the game plan.
+- **No-trade days:** sections 3–5 collapse into a single **POSTURE** section stating the
+  stance and the re-entry condition. Sections 1, 2, 6, 7 still render.
+- **A missing input is written as UNAVAILABLE with its reason, never silently dropped.**
+  An absent section reads as "nothing to report"; that is how a broken data source becomes
+  invisible.
+
+### Mapping to the Notion body — deliberately NOT identical
+
+The two structures share a spine but are not the same list, because the Notion page keeps
+growing after the plan is written and the local artifact does not.
+
+| Local section | Notion counterpart |
+|---|---|
+| 1 HEADER · 2 MACRO · 3 THESIS TRADE · 4 WATCHLIST | same, same order |
+| 6 RULES | Notion §5 RULES — **same content, different position** |
+| 5 VALIDITY GATE · 7 FOOTER | **local only** — build-time reasoning + channel manifest |
+| — | **Notion only:** INTRA-DAY UPDATES, EOD REVIEW — appended during and after the session, so they cannot exist at build time |
+
+Do not "fix" this into a 1:1 mapping. Sections 1–4 must match exactly so the two renderings
+can be diffed; the rest differ for a stated reason.
+
+**Why this exists:** across five shipped plans (06-05, 06-08, 08-05, 08-06, 08-10) **not one
+section heading appeared in all five**, and the only surviving concept — "rules" — drifted
+from `Rules for Today (3 rules max)` to `Rules in force`, silently dropping the 3-rule cap.
+Structure was mandated for the Notion page only, so the artifact read at 06:00 every morning
+was ungoverned and reinvented per session.
+
+### Other naming conventions that have drifted — hold these too
+
+- **Private Drive file:** `GAMEPLAN-YYYY-MM-DD.md`. On 2026-08-10 it was written as
+  `2026-08-10 Game Plan (PRIVATE) — GLD LONG`, which does not sort with its siblings.
+- **Local artifact:** `Reviews/YYYY-MM-DD-gameplan.md`, lowercase, ISO date first
+  (ReportingSchema Rule 7). The `-PRIVATE` / `-PUBLIC` suffixes used in June are deprecated.
+
 ## ⛔ HARD RULE: Channel Topology + Notion Protocol
 
 **Notion + Slack #general + Discord = PUBLIC channels. Google Drive Game_Plan folder = PRIVATE channel.** Public-channel content is sanitized per `[[channel-topology]]` + `[[public-share-minimal]]` (strip broker accounts, FL internals, banned-ticker rationale, behavioral contracts verbatim, $ R-values).
