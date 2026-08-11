@@ -77,6 +77,14 @@ Full validated column ID range: 0–150. See JSON schema at:
 - **Used for:** Camarilla pivot calculation, ATR computation, trend identification
 - **API key location:** `~/.claude/LifeOS/USER/SKILLCUSTOMIZATIONS/Trading/PREFERENCES.md`
 
+## CBOE Delayed Quotes (Options — GEX)
+- **Purpose:** Options open interest + implied volatility for the SPY GEX (gamma exposure) snapshot
+- **Endpoint:** `https://cdn.cboe.com/api/global/delayed_quotes/options/{SYM}.json` (index roots take an underscore prefix, e.g. `SPX` → `_SPX`)
+- **No API key required** (public CDN; send a `User-Agent` header)
+- **Key fields:** `open_interest`, `iv`, `gamma`, `delta` per contract; `current_price` for spot
+- **Used for:** `Tools/spy_gex_compute.py` — dealer net gamma, zero-gamma flip, magnet strikes
+- **Why CBOE:** open interest is an end-of-day figure (it doesn't move intraday), so a ~15-min-delayed EOD-settled feed is *correct* for a morning GEX. yfinance's `openInterest` returned 0; provider options tiers may not be entitled.
+
 ## SEC EDGAR
 - **Purpose:** Company filings for catalyst identification
 - **Base URL:** `https://efts.sec.gov/LATEST/`

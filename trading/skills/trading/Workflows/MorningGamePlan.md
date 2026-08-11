@@ -271,6 +271,18 @@ If the trigger has not fired by Kill Time, **the thesis is dead for the day.** N
 
    Note: If Substrate data is more than 7 days old, flag it and run `bun ~/.claude/skills/USMetrics/Tools/UpdateSubstrateMetrics.ts` before proceeding.
 
+3b. **SPY GEX Snapshot (options positioning regime):**
+   Run `python Tools/spy_gex_compute.py --max-dte 30` and paste the markdown block into the macro section. Dealer net gamma (GEX) drives intraday tape character and yields a zero-gamma flip level (magnet/repellent). Data source: **CBOE's public delayed-quotes feed** — free, no API key, real open interest + IV; gamma is computed via Black-Scholes-Merton.
+
+   | GEX Regime | Tape character | Setup bias |
+   |------------|----------------|------------|
+   | POSITIVE (strong) | mean-reversion, chop, strike-pinning | fade extremes; expect ranges to hold |
+   | POSITIVE (moderate) | mild dampening | ranges hold; trends weaker than they look |
+   | NEGATIVE (moderate) | mild amplification | trends extend; breakouts follow through |
+   | NEGATIVE (strong) | amplified moves | chase breakouts; fade only at multi-timeframe confirm |
+
+   Zero-gamma flip: if within ~$5 of spot, the day likely revolves around that level (magnet/repellent). If there's no flip in the ±15% band, the regime is stable. Feed the regime into step 4.
+
 4. **Determine market regime** (informed by steps 1-3 above):
    - Trending / Ranging / Gap Day / High Volatility / Choppy
    - Use VIX signal from step 3 as primary input
