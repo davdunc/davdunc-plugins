@@ -72,7 +72,13 @@ The system will:
 - **Key value:** A consistent, mechanical bull/bear filter applied to whatever the CNBC panel is talking about — useful as an independent check on a discretionary thesis. The blue-flag count is a fast breadth read.
 - **Tone:** Methodical, level-driven, explicitly avoids "it's cheap" reasoning
 - **Publishes:** evening piece lands 20:00–21:16 ET (= 00:00+ UTC next day; rollover window applies)
-- **Filter keywords:** `technical analysis by blue cloud`, `half time report`, `stock market analysis`, `power lunch`
+- **Filter keywords:** `technical analysis by blue cloud`, `half time`, `stock market analysis`, `power lunch`
+  <!-- `half time`, not `half time report`: the channel titles these "Half Time & Closing Bell",
+       which the longer keyword does not match. Cost us 2026-08-17 entirely. This widens the
+       match but does NOT fix the general fragility — 2026-08-14 was lost to a guest-quote
+       headline ("Josh Brown says ...") that no keyword list would anticipate. Blue Cloud posts
+       ~1 video/day, so the filter is guarding against a volume problem it does not have;
+       removing the line outright is the proposed real fix, pending the pipeline owner's call. -->
   <!-- 2026-07-28: the single "technical analysis by blue cloud" keyword matched only 1 of 15 recent
        videos. Their evening titles lead with the guest/thesis ("TOM LEE SAYS...", "Half Time Report
        - Stock picks") and append the analysis phrase inconsistently. Broadened to match the real
