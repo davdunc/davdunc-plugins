@@ -119,9 +119,9 @@ Tickers below are banned from the LIVE account based on 13-month DynamoDB data a
 
 ### Banned — Grind Pattern (SIM Only Until 5 Consecutive Profitable Sessions)
 
-| Ticker | Session | Execs | P&L | Why Banned | Reinstatement |
-|--------|---------|-------|-----|-----------|---------------|
-| **MU** | 2026-05-27 | 181 live | -$324.94 | 90+ round trips over 6.5 hours, off-plan, $280 symbol stop blown at exec ~20, exhaustion-lens grind on a choppy range | 5 sim sessions using Risk-Off at Choppy Edges setup with ≤10 executions/session |
+| Ticker | Why Banned | Reinstatement |
+|--------|-----------|---------------|
+| **MU** | 90+ round trips in a single session over 6½ hours, off-plan, symbol stop blown around the twentieth execution, exhaustion-lens grind on a choppy range | 5 sim sessions using Risk-Off at Choppy Edges setup with ≤10 executions/session |
 
 ### Banned — Single-Trade Catastrophes
 
