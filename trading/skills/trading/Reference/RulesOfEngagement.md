@@ -77,7 +77,7 @@ Full detail: `USER/TRADING/Reviews/REVIEW-2026-08-04.md`.
 2. **Playbook trades only** — if it's not in the game plan, it doesn't get traded
 3. **One loss = pause 5 minutes** — review, don't revenge trade
 4. **Three losses = done for the day** — protect capital, review in the afternoon
-5. **Symbol stop hit (−1R) = close ticker, lock it for the session.** Do not reopen. Discuss with a teammate before returning to any ticker after a symbol stop. *(1R = LIVE $28 / SIM $75 per the `PREFERENCES.md` R-CONFIG — never the stale "$280".)*
+5. **Symbol stop hit (−1R) = close ticker, lock it for the session.** Do not reopen. Discuss with a teammate before returning to any ticker after a symbol stop. *(1R is per account and read from the `PREFERENCES.md` R-CONFIG; LIVE and SIM are never blended.)*
 5. **Thesis trade gets priority** — don't let screen movers steal attention and capital
 6. **ATR-based stops on every single trade** — no exceptions
 7. **No averaging down into losers** — if the first entry goes against you, honor the stop
@@ -85,8 +85,9 @@ Full detail: `USER/TRADING/Reviews/REVIEW-2026-08-04.md`.
 9. **Maximum 1-2 tickers on live per session**
 
 ## Position Sizing
-- **Max risk per trade: 1R.** LIVE **$28** (0.1% of $28K working capital) / SIM **$75**.
-  Sourced from the `PREFERENCES.md` R-CONFIG — never hard-coded here.
+- **Max risk per trade: 1R.** LIVE 1R is **0.1% of working capital**; SIM 1R is operator-set.
+  Both are read from the `PREFERENCES.md` R-CONFIG — never hard-coded here, and never
+  published in this public repo.
 - **Symbol stop: once a ticker hits −1R cumulative in a session, close it and do not
   re-enter that day.** The loss is the stop. 160 executions after the stop is blown is not
   trading — it is a behavioral emergency.
