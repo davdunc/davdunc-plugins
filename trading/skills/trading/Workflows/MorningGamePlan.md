@@ -6,40 +6,42 @@ description: Build the daily morning game plan with market data, intelligence, a
 
 ## Tool & Interpreter Resolution
 
-**Resolve these ONCE at the start of the run, then use the names everywhere below.**
-Never hardcode an interpreter or tool path at a call site again.
+**Every step below that shells out runs in its own shell — environment variables do NOT
+persist between steps.** So this is not a "set it once at the top" block: it is a **prelude
+that each call site re-emits verbatim.** Copy it, do not paraphrase it, and do not replace it
+with a path literal.
 
 ```bash
 FALCON=~/falcon/dashboard
-GAMEPLAN_PY=$FALCON/.venv/bin/python   # needs `requests`; verified 3.14.7 on trader-desk
+GAMEPLAN_PY=$(for v in "$FALCON"/.venv*/bin/python; do
+  [ -x "$v" ] && "$v" -c 'import requests' 2>/dev/null && { echo "$v"; break; }
+done)
+[ -n "$GAMEPLAN_PY" ] || { echo "BLOCKED: no venv under $FALCON imports requests" >&2; exit 1; }
 ```
 
-**If `$GAMEPLAN_PY` does not exist, do not guess a sibling venv.** List
-`~/falcon/dashboard/.venv*/` and pick the one whose python imports `requests`:
+The prelude **derives** the interpreter from what it must be able to do — import `requests` —
+rather than naming where it currently lives. That is the whole point: a capability is stable
+across this cluster, a path is not. It exits non-zero and says so when nothing resolves, so a
+failed resolution can never be mistaken for a successful one.
 
-```bash
-for v in $FALCON/.venv*/bin/python; do
-  "$v" -c 'import requests' 2>/dev/null && { echo "GAMEPLAN_PY=$v"; break; }
-done
-```
+**State in the published plan which interpreter resolved.** A silent substitution is how this
+drifts between nodes without anyone noticing.
 
-Then **state in the published plan which interpreter you used.** A silent substitution is
-how this drifts between nodes without anyone noticing.
+Tools that ship as installed CLIs (`tradekit`) are resolved by `PATH`, not by a path literal —
+that is the point of packaging them. Check with `command -v tradekit`.
 
-Tools that ship as installed CLIs (`tradekit`) are resolved by `PATH`, not by a path
-literal — that is the point of packaging them. Check with `command -v tradekit`.
-
-**Why this block exists.** This line has already moved twice, both times because an OS
-upgrade removed an interpreter underneath a document that could not know about it:
+**Why this block exists.** This line has already moved twice, both times because an OS upgrade
+removed an interpreter underneath a document that could not know about it:
 
 | Date | Change | Cause |
 |---|---|---|
 | 2026-08-05 (#8) | `.venv` → `.venv-gameplan` | Fedora 44 dropped Python 3.13, killing `.venv` |
 | 2026-09-09 (#11) | `.venv-gameplan` → `.venv` | `.venv-gameplan` gone; `.venv` rebuilt on 3.14 |
 
-The path is a **node fact living in a repo file**, so it decays on the node's schedule, not
-the repo's. The value above is a cache; the resolution rule is its invalidation. Keeping both
-together is what stops a third flip.
+A path is a **node fact** and this file is a **repo artifact shared across nodes**, so a
+hardcoded path decays on the node's schedule rather than the repo's. Both flips above were
+edits to a literal; a third edit to a literal would just schedule a fourth. Resolving by
+capability is what ends it.
 
 ## ⛔ HARD RULE: Video Intel Layer Is a Prerequisite, Not a Nice-to-Have
 
@@ -207,6 +209,11 @@ Linked memory: `[[falcon-cluster-agent-sync]]`, `[[channel-topology]]`.
 
 Run as part of the news-pull step:
 ```bash
+FALCON=~/falcon/dashboard
+GAMEPLAN_PY=$(for v in "$FALCON"/.venv*/bin/python; do
+  [ -x "$v" ] && "$v" -c 'import requests' 2>/dev/null && { echo "$v"; break; }
+done)
+[ -n "$GAMEPLAN_PY" ] || { echo "BLOCKED: no venv under $FALCON imports requests" >&2; exit 1; }
 "$GAMEPLAN_PY" "$FALCON/dilution_scan.py"
 ```
 
@@ -535,6 +542,11 @@ After presenting the game plan, automatically populate DAS Trader Market Viewer:
 
 2. **Run das_market_viewer.py:**
    ```bash
+   FALCON=~/falcon/dashboard
+   GAMEPLAN_PY=$(for v in "$FALCON"/.venv*/bin/python; do
+     [ -x "$v" ] && "$v" -c 'import requests' 2>/dev/null && { echo "$v"; break; }
+   done)
+   [ -n "$GAMEPLAN_PY" ] || { echo "BLOCKED: no venv under $FALCON imports requests" >&2; exit 1; }
    "$GAMEPLAN_PY" "$FALCON/das_market_viewer.py" TICKER1 TICKER2 TICKER3 ...
    ```
    - Always writes `C:\Cobra Trading_x64\GamePlan\GamePlan-Today.txt` (1-right-click load fallback), creating the folder if absent
