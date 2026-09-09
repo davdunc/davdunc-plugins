@@ -92,10 +92,11 @@ User: "ingest this video https://youtube.com/watch?v=xyz"
 - **Time zone:** Central — market open 8:30 CT
 - **Platform:** DAS Trader Pro + ThinkorSwim (Bookmap)
 - **Strategies:** Momentum — gaps, breakouts, VWAP, ORB, 9EMA x VWAP/21EMA
-- **Risk:** ~$28K account. **1R = $28 (0.1% of working capital)** — LIVE. SIM 1R = $75.
+- **Risk:** **1R = 0.1% of LIVE working capital**; SIM carries its own operator-set 1R.
   Per-symbol max −1R, daily max −3R. **`PREFERENCES.md` R-CONFIG is the only authority**;
-  never hard-code a dollar figure here. *(Corrected 2026-08-05 from a stale "1% per trade",
-  which implied $280 and contradicted every review ever scored.)*
+  never hard-code a dollar figure here — and this is a public plugin, so no account size
+  or concrete R value is published in this repo. *(Corrected 2026-08-05 from a stale "1% per trade",
+  a 10x overstatement that contradicted every review ever scored.)*
 
 **Full Documentation:**
 - Setup definitions: `PlaybookSetups.md`

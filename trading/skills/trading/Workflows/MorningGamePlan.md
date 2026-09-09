@@ -35,9 +35,9 @@ Failure mode this prevents: 2026-06-03 — drafted clean gameplan, then asked "p
 
 ## ⛔ HARD RULE: R-Units Required
 
-**All trade plans, stops, targets, and recap numbers use R-units.** Read the R-CONFIG block at the top of `~/.claude/LifeOS/USER/SKILLCUSTOMIZATIONS/Trading/PREFERENCES.md → Trading Preferences → Risk Parameters` at the start of every run. Express stops as both price + per-share R, targets as R-multiples, daily limits as ±NR, position sizing as fraction-of-R-exposure. Always include the derived dollar in parentheses for readability (e.g., "1R ($28)" for LIVE, "1R ($75)" for SIM). Linked memory: `[[r-units-default]]`.
+**All trade plans, stops, targets, and recap numbers use R-units.** Read the R-CONFIG block at the top of `~/.claude/LifeOS/USER/SKILLCUSTOMIZATIONS/Trading/PREFERENCES.md → Trading Preferences → Risk Parameters` at the start of every run. Express stops as both price + per-share R, targets as R-multiples, daily limits as ±NR, position sizing as fraction-of-R-exposure. Include the derived dollar in parentheses for readability — e.g. `1R ($NN)` — reading the figure from your own R-CONFIG. **R is per account: LIVE and SIM carry independent values and are never blended.** This is a public plugin, so no concrete R value is published here; PREFERENCES.md is the only authority. Linked memory: `[[r-units-default]]`.
 
-**Anti-pattern:** Hard-coding dollar amounts ("max $280 risk", "target $30.50") in workflow output. R-units are the lingua franca; dollars derive from PREFERENCES.
+**Anti-pattern:** Hard-coding dollar amounts ("max $NNN risk", "target $NN.NN") in workflow output. R-units are the lingua franca; dollars derive from PREFERENCES.
 
 ## ⛔ HARD RULE: Canonical Reporting Schema
 
@@ -213,8 +213,17 @@ Linked memory: `[[rs-atm-combo-setup]]`.
 
 Run before Phase 6 synthesis (data: **CBOE public delayed-quotes feed** — free, no API key, real open interest + IV; gamma via Black-Scholes-Merton. yfinance's `openInterest` returned 0 and was retired 2026-08-11):
 ```bash
-python Tools/spy_gex_compute.py --max-dte 14
+tradekit gex --max-dte 14
 ```
+
+**The tool is [`tradekit`](https://github.com/davdunc/tradekit), not a script in this plugin.**
+Install with `uv tool install tradekit` (or from a checkout: `uv tool install ~/src/tradekit`).
+
+This plugin shipped its own `Tools/spy_gex_compute.py` until 2026-09-08. It was deleted, and a
+copy should not be reintroduced. Three machines ended up running three different versions of that
+file at three different paths; a correction shipped to one never reached the others, and nothing
+in any of their outputs distinguished them. A packaged CLI makes the version a number you can
+print — `tradekit --version` — rather than a file date you have to go and compare.
 
 Paste the markdown output into the macro section. The regime label + tape-read implication determines how to grade today's setups:
 
@@ -301,7 +310,7 @@ If the trigger has not fired by Kill Time, **the thesis is dead for the day.** N
 
    Note: If Substrate data is more than 7 days old, flag it and run `bun ~/.claude/skills/USMetrics/Tools/UpdateSubstrateMetrics.ts` before proceeding.
 
-3b. **SPY GEX Snapshot:** run the GEX snapshot per the *SPY GEX Snapshot in Macro Block* hard rule above (CBOE-sourced, `Tools/spy_gex_compute.py`), paste it into the macro block, and feed its regime label into step 4.
+3b. **SPY GEX Snapshot:** run the GEX snapshot per the *SPY GEX Snapshot in Macro Block* hard rule above (CBOE-sourced, `tradekit gex`), paste it into the macro block, and feed its regime label into step 4.
 
 4. **Determine market regime** (informed by steps 1-3 above):
    - Trending / Ranging / Gap Day / High Volatility / Choppy

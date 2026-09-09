@@ -51,21 +51,28 @@ day's high/low.** A fill outside the range means the date is wrong, not the tape
 
 ## Rule 3 — R-units
 
-Format: `+2.3R ($644)` — R first, dollars in parentheses.
+Format: `+2.3R ($NNN)` — R first, dollars in parentheses, the dollar figure derived at render time
+from the account's own R-CONFIG.
 `1R = abs(entry − stop) × shares`.
 
 **When `planned_stop` is absent, render `R n/a`. Never fabricate.** On 2026-07-30, 14 of 16
-round-trips had no stop order; an earlier build manufactured an R for all of them and
-reported −0.5R on a +$274 day.
+round-trips had no stop order; an earlier build manufactured an R for all of them and reported the
+session as a net loss in R on a day that was solidly green in cash. A fabricated denominator does
+not just add noise — it inverts the sign.
 
-**1R = LIVE $28 / SIM $75**, sourced from the `PREFERENCES.md` R-CONFIG. That block is the
-only authority; no other file may hard-code a dollar figure.
+**1R is per account** — LIVE is 0.1% of working capital, SIM is operator-set — and both are
+sourced from the `PREFERENCES.md` R-CONFIG. That block is the only authority; no other file may
+hard-code a dollar figure, and this public repo publishes none.
 
-> **Resolved 2026-08-05 (operator decision).** `SKILL.md` and `RulesOfEngagement.md` had
-> carried **$280** (1% of $28K) against PREFERENCES' **$28** (0.1%) — a 10× split from a
-> single decimal place. $28 is correct and matches every review scored to date. All three
-> files plus `MorningGamePlan.md`'s worked example were corrected. Verify against the
-> trader-desk S3 copy when next reachable; this machine is documented to drift.
+> **Resolved 2026-08-05 (operator decision).** `SKILL.md` and `RulesOfEngagement.md` had carried
+> **1% per trade** against PREFERENCES' **0.1%** — a 10× split from a single decimal place. The
+> 0.1% figure is correct and matches every review scored to date. All three files plus
+> `MorningGamePlan.md`'s worked example were corrected. Verify against the trader-desk S3 copy
+> when next reachable; this machine is documented to drift.
+>
+> The lesson generalises past the number: a risk constant duplicated across four files will
+> diverge, and the copy that diverges is the one nobody scores against. Keep the value in
+> R-CONFIG and the *ratio* in the docs.
 
 ## Rule 4 — one grade ladder
 
