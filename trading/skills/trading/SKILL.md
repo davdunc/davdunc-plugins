@@ -96,7 +96,7 @@ User: "ingest this video https://youtube.com/watch?v=xyz"
   Per-symbol max −1R, daily max −3R. **`PREFERENCES.md` R-CONFIG is the only authority**;
   never hard-code a dollar figure here — and this is a public plugin, so no account size
   or concrete R value is published in this repo. *(Corrected 2026-08-05 from a stale "1% per trade",
-  which implied $280 and contradicted every review ever scored.)*
+  a 10x overstatement that contradicted every review ever scored.)*
 
 **Full Documentation:**
 - Setup definitions: `PlaybookSetups.md`

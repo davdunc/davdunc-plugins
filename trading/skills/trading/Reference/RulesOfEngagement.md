@@ -51,16 +51,16 @@ conditional on the position being profitable.
 
 **Why this rule exists — 2026-07-31 → 2026-08-04, SPCX:**
 
-| Mark | SPCX | Position (short 10 @ 111.31) |
+| Mark | SPCX | Position (short from 111.31) |
 |---|---:|---:|
-| Fri 07-31 close | 108.37 | **+$29.40 = +1.05R** ✅ |
-| Mon 08-03 close | 114.53 | **−$32.20 = −1.15R** ❌ |
-| Tue 08-04 cover ~05:07 | ~115.80 | **≈ −$45 = −1.6R** |
+| Fri 07-31 close | 108.37 | **+1.05R** ✅ |
+| Mon 08-03 close | 114.53 | **−1.15R** ❌ |
+| Tue 08-04 cover ~05:07 | ~115.80 | **≈ −1.6R** |
 
 The position was **up more than 1R at Friday's close and was carried.** It breached the
-per-symbol stop **on Monday — a session with zero trades placed.** By the third fill of
-Tuesday it was already −$31.45, and the remaining 44 fills / 397 shares in that name
-produced **−8.6R on the day, −9.6R overall** — the largest loss in the record.
+per-symbol stop **on Monday — a session with zero trades placed.** It was already beyond 1R by the
+third fill on Tuesday, and the grind that followed in that name produced **−8.6R on the day, −9.6R
+overall** — the largest loss in the record.
 
 The per-symbol stop is a *session* rule and could not fire on a position held across
 sessions. This rule closes that gap.
@@ -92,11 +92,11 @@ Full detail: `USER/TRADING/Reviews/REVIEW-2026-08-04.md`.
   re-enter that day.** The loss is the stop. 160 executions after the stop is blown is not
   trading — it is a behavioral emergency.
 
-> **Corrected 2026-08-05.** This section previously read **−$280** (1% of the account) in
-> three places, while `PREFERENCES.md` has said **−$28** (0.1%) since 2026-07-24 and every
-> published review was scored against $28. Under the stale figure, the 2026-08-04 SPCX loss
-> of −$219 read as *inside* the per-symbol stop; it was in fact a **7.8R breach**. One
-> decimal place, and it made the worst session in the record look compliant.
+> **Corrected 2026-08-05.** This section previously stated the per-symbol stop as **1% of the
+> account** in three places, while `PREFERENCES.md` has said **0.1%** since 2026-07-24 and every
+> published review was scored against the smaller figure. Under the stale number the 2026-08-04
+> SPCX loss read as *inside* the per-symbol stop; it was in fact a **7.8R breach**. One decimal
+> place, and it made the worst session in the record look compliant.
 - Prove edge in sim first — minimum 5 profitable sessions before going live on a ticker
 - Size into conviction on thesis trades
 
@@ -104,18 +104,24 @@ Full detail: `USER/TRADING/Reviews/REVIEW-2026-08-04.md`.
 
 Tickers below are banned from the LIVE account based on 13-month DynamoDB data analysis. Each requires 5 consecutive profitable sim sessions before returning to live.
 
+> **This is a public plugin, so no trade counts, win rates or P&L are published here.** The bans
+> are enforced by the behaviour that earned them and the condition for lifting them, neither of
+> which needs a dollar figure. The underlying numbers live in the private review store; where a
+> reason once cited a dollar amount it is now stated in R, which is the unit the rules are
+> written in anyway and does not go stale as the account changes.
+
 ### Banned — Negative Edge Despite High Volume
 
-| Ticker | Trades | Win% | Total P&L | Why Banned | Reinstatement Criteria |
-|--------|--------|------|-----------|-----------|----------------------|
-| **AMD** | 85 | 69% | -$782 | Inverse sizing: wins small, loses massive (-$573 worst). THE poster child for C5. | 5 consecutive sim sessions with avg winner > avg loser |
-| **UGRO** | 73 | 38% | -$553 | Revenge trading pattern (C4). 38% win rate = no edge. | 5 sim sessions at 50%+ win rate with max 3 trades/session |
-| **AMZN** | 17 | 53% | -$735 | Outside account range at $195. Avg loss -$43/trade. Can't size properly. | Only if price drops below $50 (unlikely) |
-| **CRCL** | 38 | 50% | -$500 | 50% win rate but losers 2x winners. No positive expectancy. | 5 sim sessions with profit factor > 1.5 |
-| **DELL** | 40 | 45% | -$287 | Below 50% win rate, worst single loss -$413. | 5 sim sessions with win rate > 55% |
-| **SOFI** | 34 | 68% | -$247 | Wins 68% but still loses money — inverse R. | 5 sim sessions with avg winner > avg loser |
-| **BA** | 22 | 50% | -$258 | Coin flip with outsized losses. No edge. | 5 sim sessions with profit factor > 1.5 |
-| **CRWV** | 22 | 41% | -$261 | Below 50% win rate, worst single -$261. | 5 sim sessions at 55%+ win rate |
+| Ticker | Why Banned | Reinstatement Criteria |
+|--------|-----------|----------------------|
+| **AMD** | Inverse sizing: wins small, loses massive — worst single loss many multiples of the per-trade cap. THE poster child for C5. | 5 consecutive sim sessions with avg winner > avg loser |
+| **UGRO** | Revenge trading pattern (C4). Win rate well under half — no edge. | 5 sim sessions at 50%+ win rate with max 3 trades/session |
+| **AMZN** | Share price is outside the account's sizing range; a 1.5-ATR stop cannot be expressed in whole shares at 1R. | Only if the price falls far enough to size properly |
+| **CRCL** | Coin-flip win rate with losers roughly twice the winners. No positive expectancy. | 5 sim sessions with profit factor > 1.5 |
+| **DELL** | Below 50% win rate, and the worst single loss ran to several R. | 5 sim sessions with win rate > 55% |
+| **SOFI** | Wins about two-thirds of the time and still loses money — inverse R. | 5 sim sessions with avg winner > avg loser |
+| **BA** | Coin flip with outsized losses. No edge. | 5 sim sessions with profit factor > 1.5 |
+| **CRWV** | Below 50% win rate, worst single loss equal to the whole ticker's deficit. | 5 sim sessions at 55%+ win rate |
 
 ### Banned — Grind Pattern (SIM Only Until 5 Consecutive Profitable Sessions)
 
@@ -125,28 +131,34 @@ Tickers below are banned from the LIVE account based on 13-month DynamoDB data a
 
 ### Banned — Single-Trade Catastrophes
 
-| Ticker | Trades | P&L | Why Banned |
-|--------|--------|-----|-----------|
-| **VERI** | 1 | -$562 | Single trade destroyed a month of gains |
-| **GWH** | 2 | -$468 | One -$576 loss wiped a winner |
-| **FROG** | 7 | -$563 | 14% win rate — no business trading this |
-| **MNDR** | 4 | -$380 | One -$361 loss, 25% win rate |
-| **STI** | 1 | -$320 | Single catastrophic loss |
-| **TGL** | 1 | -$268 | Single catastrophic loss |
+| Ticker | Why Banned |
+|--------|-----------|
+| **VERI** | One trade gave back a month of gains |
+| **GWH** | A single loss wiped out a winner and then some |
+| **FROG** | Win rate in the teens — no business trading this |
+| **MNDR** | One outsized loss against a quarter win rate |
+| **STI** | Single catastrophic loss |
+| **TGL** | Single catastrophic loss |
+
+Each of these breached `PER_SYMBOL_MAX_R` in one trade. That is the common thread, and it is a
+sizing failure rather than a selection one — the same loss at correct size would have been −1R.
 
 ### Approved — Proven Edge (Live OK)
 
-| Ticker | Trades | Win% | Total P&L | Why Approved |
-|--------|--------|------|-----------|-------------|
-| **SOXL** | 76 | 75% | +$360 | Consistent edge, good R, high volume proven |
-| **ONDS** | 29 | 72% | +$308 | Strong win rate + positive expectancy |
-| **INTC** | 21 | 62% | +$336 | Earnings edge, good recent performance |
-| **MSFT** | 12 | 92% | +$22 | Highest win rate but small P&L — sizing opportunity |
-| **IBIT** | 7 | 71% | +$156 | Consistent with BTC momentum |
-| **USO** | 163 | 55% | -$124 | Most traded, near breakeven — CAUTION: reduce size |
+| Ticker | Why Approved |
+|--------|-------------|
+| **SOXL** | Consistent edge, good R, high volume proven — the Base Hit anchor |
+| **ONDS** | Strong win rate with positive expectancy |
+| **INTC** | Earnings edge, good recent performance |
+| **MSFT** | Highest win rate on the book, but position sizes are too small to matter — a sizing opportunity, not a problem |
+| **IBIT** | Consistent with BTC momentum |
+| **USO** | Most-traded name and roughly breakeven — **CAUTION: reduce size** |
 
 ### USO Special Note
-USO is your most-traded ticker at 163 round-trips. It's not banned because you're near breakeven and 55% win rate shows marginal edge. BUT: the volume suggests grinding. **Cap at 5 round-trips per session on USO.** If you can't make it work in 5, the edge isn't there that day.
+USO is the most-traded ticker on the book by a wide margin. It is not banned: the win rate shows a
+marginal edge and the P&L is near breakeven. But that volume against that result is the signature of
+grinding, not of edge. **Cap at 5 round-trips per session on USO.** If it cannot be made to work in
+five, the edge is not there that day.
 
 ## Post-Session
 - Export DAS Trader data (Trades.csv, Orders.csv, P&L screenshots)

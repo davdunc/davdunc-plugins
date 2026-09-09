@@ -37,7 +37,7 @@ Failure mode this prevents: 2026-06-03 — drafted clean gameplan, then asked "p
 
 **All trade plans, stops, targets, and recap numbers use R-units.** Read the R-CONFIG block at the top of `~/.claude/LifeOS/USER/SKILLCUSTOMIZATIONS/Trading/PREFERENCES.md → Trading Preferences → Risk Parameters` at the start of every run. Express stops as both price + per-share R, targets as R-multiples, daily limits as ±NR, position sizing as fraction-of-R-exposure. Include the derived dollar in parentheses for readability — e.g. `1R ($NN)` — reading the figure from your own R-CONFIG. **R is per account: LIVE and SIM carry independent values and are never blended.** This is a public plugin, so no concrete R value is published here; PREFERENCES.md is the only authority. Linked memory: `[[r-units-default]]`.
 
-**Anti-pattern:** Hard-coding dollar amounts ("max $280 risk", "target $30.50") in workflow output. R-units are the lingua franca; dollars derive from PREFERENCES.
+**Anti-pattern:** Hard-coding dollar amounts ("max $NNN risk", "target $NN.NN") in workflow output. R-units are the lingua franca; dollars derive from PREFERENCES.
 
 ## ⛔ HARD RULE: Canonical Reporting Schema
 
