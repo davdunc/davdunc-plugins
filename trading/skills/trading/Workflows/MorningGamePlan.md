@@ -4,6 +4,43 @@ description: Build the daily morning game plan with market data, intelligence, a
 
 # MorningGamePlan Workflow
 
+## Tool & Interpreter Resolution
+
+**Resolve these ONCE at the start of the run, then use the names everywhere below.**
+Never hardcode an interpreter or tool path at a call site again.
+
+```bash
+FALCON=~/falcon/dashboard
+GAMEPLAN_PY=$FALCON/.venv/bin/python   # needs `requests`; verified 3.14.7 on trader-desk
+```
+
+**If `$GAMEPLAN_PY` does not exist, do not guess a sibling venv.** List
+`~/falcon/dashboard/.venv*/` and pick the one whose python imports `requests`:
+
+```bash
+for v in $FALCON/.venv*/bin/python; do
+  "$v" -c 'import requests' 2>/dev/null && { echo "GAMEPLAN_PY=$v"; break; }
+done
+```
+
+Then **state in the published plan which interpreter you used.** A silent substitution is
+how this drifts between nodes without anyone noticing.
+
+Tools that ship as installed CLIs (`tradekit`) are resolved by `PATH`, not by a path
+literal — that is the point of packaging them. Check with `command -v tradekit`.
+
+**Why this block exists.** This line has already moved twice, both times because an OS
+upgrade removed an interpreter underneath a document that could not know about it:
+
+| Date | Change | Cause |
+|---|---|---|
+| 2026-08-05 (#8) | `.venv` → `.venv-gameplan` | Fedora 44 dropped Python 3.13, killing `.venv` |
+| 2026-09-09 (#11) | `.venv-gameplan` → `.venv` | `.venv-gameplan` gone; `.venv` rebuilt on 3.14 |
+
+The path is a **node fact living in a repo file**, so it decays on the node's schedule, not
+the repo's. The value above is a cache; the resolution rule is its invalidation. Keeping both
+together is what stops a third flip.
+
 ## ⛔ HARD RULE: Video Intel Layer Is a Prerequisite, Not a Nice-to-Have
 
 **Before Phase 1, pull the prior session's evening videos. If they are missing, say so in the published plan — do not proceed silently.**
@@ -170,7 +207,7 @@ Linked memory: `[[falcon-cluster-agent-sync]]`, `[[channel-topology]]`.
 
 Run as part of the news-pull step:
 ```bash
-~/falcon/dashboard/.venv-gameplan/bin/python ~/falcon/dashboard/dilution_scan.py
+"$GAMEPLAN_PY" "$FALCON/dilution_scan.py"
 ```
 
 The script pulls Polygon news (last 24h) and flags any ticker whose recent news matches keywords across two categories:
@@ -213,8 +250,18 @@ Linked memory: `[[rs-atm-combo-setup]]`.
 
 Run before Phase 6 synthesis (data: **CBOE public delayed-quotes feed** — free, no API key, real open interest + IV; gamma via Black-Scholes-Merton. yfinance's `openInterest` returned 0 and was retired 2026-08-11):
 ```bash
-python Tools/spy_gex_compute.py --max-dte 14
+tradekit gex --max-dte 14
 ```
+
+**The GEX tool ships in [tradekit](https://github.com/davdunc/tradekit), not in this plugin —
+do not reintroduce a script copy here.** This plugin carried
+`Tools/spy_gex_compute.py` until 2026-09-09: a *third* lineage of the same tool, alongside the
+LifeOS skill copy and the one in `~/falcon/dashboard/`. A correction shipped into one copy never
+reached the others, all three nodes believed they were current, and **nothing in any of their
+outputs could tell them apart** — a GEX sign error is a wrong regime read, which inverts every
+setup grade downstream. `tradekit --version` makes the version a number you can print instead of
+a file date you have to go and compare. If `tradekit` is missing, install it; do not vendor the
+script back in.
 
 Paste the markdown output into the macro section. The regime label + tape-read implication determines how to grade today's setups:
 
@@ -301,7 +348,7 @@ If the trigger has not fired by Kill Time, **the thesis is dead for the day.** N
 
    Note: If Substrate data is more than 7 days old, flag it and run `bun ~/.claude/skills/USMetrics/Tools/UpdateSubstrateMetrics.ts` before proceeding.
 
-3b. **SPY GEX Snapshot:** run the GEX snapshot per the *SPY GEX Snapshot in Macro Block* hard rule above (CBOE-sourced, `Tools/spy_gex_compute.py`), paste it into the macro block, and feed its regime label into step 4.
+3b. **SPY GEX Snapshot:** run the GEX snapshot per the *SPY GEX Snapshot in Macro Block* hard rule above (CBOE-sourced, `tradekit gex`), paste it into the macro block, and feed its regime label into step 4.
 
 4. **Determine market regime** (informed by steps 1-3 above):
    - Trending / Ranging / Gap Day / High Volatility / Choppy
@@ -488,7 +535,7 @@ After presenting the game plan, automatically populate DAS Trader Market Viewer:
 
 2. **Run das_market_viewer.py:**
    ```bash
-   python3 ~/falcon/dashboard/das_market_viewer.py TICKER1 TICKER2 TICKER3 ...
+   "$GAMEPLAN_PY" "$FALCON/das_market_viewer.py" TICKER1 TICKER2 TICKER3 ...
    ```
    - Always writes `C:\Cobra Trading_x64\GamePlan\GamePlan-Today.txt` (1-right-click load fallback), creating the folder if absent
    - The `GamePlan\` subfolder is deliberate — the DAS install root holds DLLs and `Config.cfg`, so plan files stay out of it
