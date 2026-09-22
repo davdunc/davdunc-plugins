@@ -86,9 +86,23 @@ Full validated column ID range: 0–150. See JSON schema at:
 - **Why CBOE:** open interest is an end-of-day figure (it doesn't move intraday), so a ~15-min-delayed EOD-settled feed is *correct* for a morning GEX. yfinance's `openInterest` returned 0; provider options tiers may not be entitled.
 
 ## SEC EDGAR
-- **Purpose:** Company filings for catalyst identification
-- **Base URL:** `https://efts.sec.gov/LATEST/`
-- **No API key required** (rate limit: 10 req/sec with User-Agent header)
+- **Purpose:** Company filings for catalyst identification, dilution checks, insider-transaction verification
+- **No API key required, but sec.gov returns HTTP 403 without a descriptive `User-Agent`** containing a
+  contact (name or email) — this is SEC's fair-access policy, not a bug. Read the contact string from the
+  `EDGAR_USER_AGENT` env var (documented in `PREFERENCES.md`'s API key table, not yet set as of
+  2026-09-22 — if unset, ask the operator once for a contact string rather than hardcoding one).
+- **The flow that actually works (confirmed 2026-09-21/22, `efts.sec.gov` full-text search was never
+  used successfully — do not rely on it as the primary path):**
+  1. `GET https://www.sec.gov/files/company_tickers.json` → find the ticker, take its `cik_str`,
+     zero-pad to 10 digits.
+  2. `GET https://data.sec.gov/submissions/CIK<10-digit-CIK>.json` → `filings.recent` gives parallel
+     arrays (`filingDate`, `form`, `accessionNumber`, `primaryDocument`) for the most recent ~1000 filings.
+  3. Build the document URL: `https://www.sec.gov/Archives/edgar/data/<CIK>/<accessionNumber without
+     dashes>/<primaryDocument>` and fetch that directly for the filing text/XML.
+  4. For Form 4 (insider transactions) specifically, parse the XML: `<rptOwnerName>`,
+     `<transactionDate><value>`, `<transactionCode>` (`P`=open-market purchase, `S`=sale),
+     `<transactionShares><value>`, `<transactionPricePerShare><value>`.
+  5. Space requests ~2s apart; this is a handful of calls per ticker, not a bulk scrape.
 - **Key filing types:**
   - 8-K: Material events (earnings, acquisitions, leadership changes, offerings)
   - 10-Q: Quarterly financials
