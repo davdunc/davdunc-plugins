@@ -30,8 +30,12 @@
  *   bun scripts/bump-plugin-version.ts lifesystems 0.2.0 --reason "Adds Dance workflow"
  *   bun scripts/bump-plugin-version.ts marketplace minor --reason "Added the lifesystems plugin"
  *
- * Requires: git, gh (authenticated), run from anywhere inside a davdunc-plugins checkout
- * (main clone or any worktree of it).
+ * Requires: git, gh (authenticated). Can be run from ANYWHERE inside ANY worktree of a
+ * davdunc-plugins checkout, on ANY currently-checked-out branch — "current version" is
+ * always read from origin/<base> via `git show`, never from the invoking worktree's
+ * working directory. (Earlier versions of this script read plugin.json/marketplace.json
+ * off disk in the "root" clone, which silently used whatever branch that clone happened
+ * to have checked out instead of the real base ref — fixed 2026-09-22.)
  *
  * Leaves the created worktree in place — same convention this repo has used by hand:
  * remove it after the PR merges (`git worktree remove <path>`), not before.
@@ -43,6 +47,7 @@ import { join } from "path";
 
 type Bump = "patch" | "minor" | "major";
 const MARKETPLACE_TARGET = "marketplace";
+const MARKETPLACE_REL_PATH = join(".claude-plugin", "marketplace.json");
 
 function usageError(msg: string): never {
   console.error(`Error: ${msg}\n`);
@@ -102,6 +107,22 @@ async function repoRoot(): Promise<string> {
   return join(gitDir, "..");
 }
 
+/**
+ * Read and parse a JSON file's content AT A GIT REF — never off disk. This is what makes
+ * the script correct regardless of which branch happens to be checked out wherever it's
+ * invoked from: `origin/<base>` is the only source of truth for "current".
+ */
+async function readJsonAtRef(root: string, ref: string, relPath: string): Promise<any> {
+  const text = await $`git show ${ref}:${relPath}`.cwd(root).text().catch(() => {
+    usageError(`"${relPath}" does not exist at ${ref} — wrong path or wrong base branch?`);
+  });
+  try {
+    return JSON.parse(text as string);
+  } catch {
+    usageError(`"${relPath}" at ${ref} is not valid JSON`);
+  }
+}
+
 function readJson(path: string): any {
   return JSON.parse(readFileSync(path, "utf-8"));
 }
@@ -116,37 +137,38 @@ async function main() {
   const isMarketplace = target === MARKETPLACE_TARGET;
 
   const root = await repoRoot();
-  const marketplaceJsonPath = join(root, ".claude-plugin", "marketplace.json");
-  if (!existsSync(marketplaceJsonPath)) usageError(`no .claude-plugin/marketplace.json under ${root} — wrong repo?`);
+  const baseRef = `origin/${base}`;
 
-  let pluginJsonPath = "";
-  let current = "";
+  await $`git fetch origin`.cwd(root);
+
+  const pluginRelPath = join(target, ".claude-plugin", "plugin.json");
+  let current: string;
+  let sourceLabel: string;
+
   if (isMarketplace) {
-    const mkt = readJson(marketplaceJsonPath);
+    const mkt = await readJsonAtRef(root, baseRef, MARKETPLACE_REL_PATH);
     current = mkt.version;
-    if (!current) usageError(`${marketplaceJsonPath} has no top-level "version" field yet — bootstrap it by hand first`);
+    sourceLabel = `${baseRef}:${MARKETPLACE_REL_PATH}`;
+    if (!current) usageError(`${sourceLabel} has no top-level "version" field yet — bootstrap it by hand first`);
   } else {
-    pluginJsonPath = join(root, target, ".claude-plugin", "plugin.json");
-    if (!existsSync(pluginJsonPath)) {
-      usageError(`no ${target}/.claude-plugin/plugin.json under ${root} — is "${target}" a real plugin dir name?`);
-    }
-    const pkg = readJson(pluginJsonPath);
+    const pkg = await readJsonAtRef(root, baseRef, pluginRelPath);
     current = pkg.version;
-    if (!current) usageError(`${pluginJsonPath} has no "version" field to bump`);
+    sourceLabel = `${baseRef}:${pluginRelPath}`;
+    if (!current) usageError(`${sourceLabel} has no "version" field to bump`);
 
-    const mkt = readJson(marketplaceJsonPath);
+    const mkt = await readJsonAtRef(root, baseRef, MARKETPLACE_REL_PATH);
     const entry = (mkt.plugins ?? []).find((p: any) => p.name === target);
-    if (!entry) usageError(`no "${target}" entry in marketplace.json's plugins[] — name mismatch?`);
+    if (!entry) usageError(`no "${target}" entry in ${baseRef}:${MARKETPLACE_REL_PATH}'s plugins[] — name mismatch, or not a real plugin?`);
   }
 
-  const next = bumpSemver(current, bumpArg, isMarketplace ? marketplaceJsonPath : pluginJsonPath);
+  const next = bumpSemver(current, bumpArg, sourceLabel);
   const branch = `chore/${target}-v${next}`;
   const worktreePath = join(root, "..", ".worktrees", `bump-${target}-${next}`);
 
-  console.log(`${target}: ${current} -> ${next}`);
+  console.log(`${target}: ${current} -> ${next}  (current read from ${sourceLabel})`);
   console.log(`branch: ${branch}`);
   console.log(`worktree: ${worktreePath}`);
-  console.log(`base: origin/${base}`);
+  console.log(`base: ${baseRef}`);
   console.log(`reason: ${reason}`);
   if (!isMarketplace) console.log(`also syncing: marketplace.json plugins[].version for "${target}"`);
 
@@ -155,30 +177,29 @@ async function main() {
     return;
   }
 
-  await $`git fetch origin`.cwd(root);
-  await $`git worktree add ${worktreePath} -b ${branch} origin/${base}`.cwd(root);
+  await $`git worktree add ${worktreePath} -b ${branch} ${baseRef}`.cwd(root);
 
-  const wtMarketplaceJsonPath = join(worktreePath, ".claude-plugin", "marketplace.json");
+  const wtMarketplaceJsonPath = join(worktreePath, MARKETPLACE_REL_PATH);
   const changedFiles: string[] = [];
 
   if (isMarketplace) {
     const wtMkt = readJson(wtMarketplaceJsonPath);
     wtMkt.version = next;
     writeJson(wtMarketplaceJsonPath, wtMkt);
-    changedFiles.push(join(".claude-plugin", "marketplace.json"));
+    changedFiles.push(MARKETPLACE_REL_PATH);
   } else {
-    const wtPluginJsonPath = join(worktreePath, target, ".claude-plugin", "plugin.json");
+    const wtPluginJsonPath = join(worktreePath, pluginRelPath);
     const wtPkg = readJson(wtPluginJsonPath);
     wtPkg.version = next;
     writeJson(wtPluginJsonPath, wtPkg);
-    changedFiles.push(join(target, ".claude-plugin", "plugin.json"));
+    changedFiles.push(pluginRelPath);
 
     const wtMkt = readJson(wtMarketplaceJsonPath);
     const entry = (wtMkt.plugins ?? []).find((p: any) => p.name === target);
-    if (!entry) usageError(`"${target}" vanished from marketplace.json between the read and the worktree checkout — race condition?`);
+    if (!entry) usageError(`"${target}" vanished from marketplace.json between the ref read and the worktree checkout — race condition?`);
     entry.version = next;
     writeJson(wtMarketplaceJsonPath, wtMkt);
-    changedFiles.push(join(".claude-plugin", "marketplace.json"));
+    changedFiles.push(MARKETPLACE_REL_PATH);
   }
 
   const commitMsg = `${target}: bump version to ${next}\n\n${reason}\n\nCo-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_016mfRe2cLXJNviRxStzTXSh`;
