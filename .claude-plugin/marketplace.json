@@ -2,6 +2,7 @@
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "davdunc-plugins",
   "description": "Personal Claude plugins collection: equities trading (watchlists, trading plans, market data, DAS Trader Pro hotkeys) and life-systems analysis (Thinking in Systems applied to a personal Life OS).",
+  "version": "1.0.0",
   "owner": {
     "name": "davdunc",
     "email": "davdunc@gmail.com"
@@ -12,6 +13,7 @@
       "description": "Download historical US stock market data (minute and daily OHLCV with extended hours) from Massive.com flat files. Stores data locally for analysis.",
       "source": "./market-data",
       "category": "data",
+      "version": "0.1.0",
       "author": {
         "name": "davdunc",
         "url": "https://github.com/davdunc"
@@ -23,6 +25,7 @@
       "description": "DAS Trader Pro hotkey, button, and routing assistant for Cobra Trading users. Writes and debugs DAS hotkey scripts, TriggerOrder brackets, CMD API commands, and risk-sizing entries.",
       "source": "./dastrader",
       "category": "trading",
+      "version": "0.1.0",
       "author": {
         "name": "davdunc",
         "url": "https://github.com/davdunc"
@@ -34,6 +37,7 @@
       "description": "Intraday momentum trading intelligence: morning game plans, daily reviews (R-units, both-account aware), evening video review, SEC filings, statistical covariance, and DAS Trader integration. Includes deterministic publish workflow to Notion + Slack + DAS Market Viewer.",
       "source": "./trading",
       "category": "trading",
+      "version": "0.2.0",
       "author": {
         "name": "davdunc",
         "url": "https://github.com/davdunc"
@@ -45,6 +49,7 @@
       "description": "Daily equities watchlist and trading-plan MCP server. Screens for high-volume, high-volatility candidates using Finviz + Polygon/Massive data (RVOL, ATR, premarket volume) and builds structured morning briefs with Camarilla pivots and news.",
       "source": "./equities-watchlist",
       "category": "trading",
+      "version": "0.1.0",
       "author": {
         "name": "davdunc",
         "url": "https://github.com/davdunc"
@@ -56,6 +61,7 @@
       "description": "Apply Donella Meadows' Thinking in Systems to a personal Life OS: stocks/flows life mapping, eight system-trap scans, 12-leverage-point goal audits, feedback-loop repair, and Dancing-with-Systems periodic reviews.",
       "source": "./lifesystems",
       "category": "productivity",
+      "version": "0.1.0",
       "author": {
         "name": "davdunc",
         "url": "https://github.com/davdunc"
