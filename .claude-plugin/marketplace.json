@@ -37,7 +37,7 @@
       "description": "Intraday momentum trading intelligence: morning game plans, daily reviews (R-units, both-account aware), evening video review, SEC filings, statistical covariance, and DAS Trader integration. Includes deterministic publish workflow to Notion + Slack + DAS Market Viewer.",
       "source": "./trading",
       "category": "trading",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "author": {
         "name": "davdunc",
         "url": "https://github.com/davdunc"
