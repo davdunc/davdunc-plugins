@@ -4,6 +4,45 @@ description: Build the daily morning game plan with market data, intelligence, a
 
 # MorningGamePlan Workflow
 
+## Tool & Interpreter Resolution
+
+**Every step below that shells out runs in its own shell — environment variables do NOT
+persist between steps.** So this is not a "set it once at the top" block: it is a **prelude
+that each call site re-emits verbatim.** Copy it, do not paraphrase it, and do not replace it
+with a path literal.
+
+```bash
+FALCON=~/falcon/dashboard
+GAMEPLAN_PY=$(for v in "$FALCON"/.venv*/bin/python; do
+  [ -x "$v" ] && "$v" -c 'import requests' 2>/dev/null && { echo "$v"; break; }
+done)
+[ -n "$GAMEPLAN_PY" ] || { echo "BLOCKED: no venv under $FALCON imports requests" >&2; exit 1; }
+```
+
+The prelude **derives** the interpreter from what it must be able to do — import `requests` —
+rather than naming where it currently lives. That is the whole point: a capability is stable
+across this cluster, a path is not. It exits non-zero and says so when nothing resolves, so a
+failed resolution can never be mistaken for a successful one.
+
+**State in the published plan which interpreter resolved.** A silent substitution is how this
+drifts between nodes without anyone noticing.
+
+Tools that ship as installed CLIs (`tradekit`) are resolved by `PATH`, not by a path literal —
+that is the point of packaging them. Check with `command -v tradekit`.
+
+**Why this block exists.** This line has already moved twice, both times because an OS upgrade
+removed an interpreter underneath a document that could not know about it:
+
+| Date | Change | Cause |
+|---|---|---|
+| 2026-08-05 (#8) | `.venv` → `.venv-gameplan` | Fedora 44 dropped Python 3.13, killing `.venv` |
+| 2026-09-09 (#11) | `.venv-gameplan` → `.venv` | `.venv-gameplan` gone; `.venv` rebuilt on 3.14 |
+
+A path is a **node fact** and this file is a **repo artifact shared across nodes**, so a
+hardcoded path decays on the node's schedule rather than the repo's. Both flips above were
+edits to a literal; a third edit to a literal would just schedule a fourth. Resolving by
+capability is what ends it.
+
 ## ⛔ HARD RULE: Video Intel Layer Is a Prerequisite, Not a Nice-to-Have
 
 **Before Phase 1, pull the prior session's evening videos. If they are missing, say so in the published plan — do not proceed silently.**
@@ -170,7 +209,12 @@ Linked memory: `[[falcon-cluster-agent-sync]]`, `[[channel-topology]]`.
 
 Run as part of the news-pull step:
 ```bash
-~/falcon/dashboard/.venv-gameplan/bin/python ~/falcon/dashboard/dilution_scan.py
+FALCON=~/falcon/dashboard
+GAMEPLAN_PY=$(for v in "$FALCON"/.venv*/bin/python; do
+  [ -x "$v" ] && "$v" -c 'import requests' 2>/dev/null && { echo "$v"; break; }
+done)
+[ -n "$GAMEPLAN_PY" ] || { echo "BLOCKED: no venv under $FALCON imports requests" >&2; exit 1; }
+"$GAMEPLAN_PY" "$FALCON/dilution_scan.py"
 ```
 
 The script pulls Polygon news (last 24h) and flags any ticker whose recent news matches keywords across two categories:
@@ -213,8 +257,18 @@ Linked memory: `[[rs-atm-combo-setup]]`.
 
 Run before Phase 6 synthesis (data: **CBOE public delayed-quotes feed** — free, no API key, real open interest + IV; gamma via Black-Scholes-Merton. yfinance's `openInterest` returned 0 and was retired 2026-08-11):
 ```bash
-python Tools/spy_gex_compute.py --max-dte 14
+tradekit gex --max-dte 14
 ```
+
+**The GEX tool ships in [tradekit](https://github.com/davdunc/tradekit), not in this plugin —
+do not reintroduce a script copy here.** This plugin carried
+`Tools/spy_gex_compute.py` until 2026-09-09: a *third* lineage of the same tool, alongside the
+LifeOS skill copy and the one in `~/falcon/dashboard/`. A correction shipped into one copy never
+reached the others, all three nodes believed they were current, and **nothing in any of their
+outputs could tell them apart** — a GEX sign error is a wrong regime read, which inverts every
+setup grade downstream. `tradekit --version` makes the version a number you can print instead of
+a file date you have to go and compare. If `tradekit` is missing, install it; do not vendor the
+script back in.
 
 Paste the markdown output into the macro section. The regime label + tape-read implication determines how to grade today's setups:
 
@@ -301,7 +355,7 @@ If the trigger has not fired by Kill Time, **the thesis is dead for the day.** N
 
    Note: If Substrate data is more than 7 days old, flag it and run `bun ~/.claude/skills/USMetrics/Tools/UpdateSubstrateMetrics.ts` before proceeding.
 
-3b. **SPY GEX Snapshot:** run the GEX snapshot per the *SPY GEX Snapshot in Macro Block* hard rule above (CBOE-sourced, `Tools/spy_gex_compute.py`), paste it into the macro block, and feed its regime label into step 4.
+3b. **SPY GEX Snapshot:** run the GEX snapshot per the *SPY GEX Snapshot in Macro Block* hard rule above (CBOE-sourced, `tradekit gex`), paste it into the macro block, and feed its regime label into step 4.
 
 4. **Determine market regime** (informed by steps 1-3 above):
    - Trending / Ranging / Gap Day / High Volatility / Choppy
@@ -488,7 +542,12 @@ After presenting the game plan, automatically populate DAS Trader Market Viewer:
 
 2. **Run das_market_viewer.py:**
    ```bash
-   python3 ~/falcon/dashboard/das_market_viewer.py TICKER1 TICKER2 TICKER3 ...
+   FALCON=~/falcon/dashboard
+   GAMEPLAN_PY=$(for v in "$FALCON"/.venv*/bin/python; do
+     [ -x "$v" ] && "$v" -c 'import requests' 2>/dev/null && { echo "$v"; break; }
+   done)
+   [ -n "$GAMEPLAN_PY" ] || { echo "BLOCKED: no venv under $FALCON imports requests" >&2; exit 1; }
+   "$GAMEPLAN_PY" "$FALCON/das_market_viewer.py" TICKER1 TICKER2 TICKER3 ...
    ```
    - Always writes `C:\Cobra Trading_x64\GamePlan\GamePlan-Today.txt` (1-right-click load fallback), creating the folder if absent
    - The `GamePlan\` subfolder is deliberate — the DAS install root holds DLLs and `Config.cfg`, so plan files stay out of it
