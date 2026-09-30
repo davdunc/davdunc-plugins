@@ -21,6 +21,8 @@ Load the appropriate reference file when the user's question requires it:
 - **`references/hotkey-scripting.md`** — Script syntax, keywords, variables, TriggerOrder/OCO, flow control, arithmetic rules, 16 script examples. Load for any scripting question.
 - **`references/order-types-routing.md`** — All order types, routes, TIFs, stop trigger behavior, pegged orders. Load for routing/order-type questions.
 - **`references/cmd-api.md`** — TCP socket API, command reference, response formats, open-source libraries. Load for automation/integration questions.
+- **`references/eod-report-export.md`** — Automating the GUI-only report exports from WSL (Win32 + Windows Script Host), what UI Automation cannot see, scheduling. Load for report-export or GUI-automation questions.
+- **`tools/`** — `das-eod-export.sh` + `das_eod_export.ps1` (end-of-day report export + ingest) and `das_scheduled_order.py` (one-shot CMD API order for a scheduler). Placeholders `{{SIM_ACCOUNT}}`, `{{LIVE_ACCOUNT}}`, `{{WINDOWS_HOME}}`/`{{WINDOWS_HOME_WIN}}` must be filled per node; credentials come from `~/.claude/.env`.
 
 When in doubt, load `hotkey-scripting.md` first — it covers the most common use cases.
 

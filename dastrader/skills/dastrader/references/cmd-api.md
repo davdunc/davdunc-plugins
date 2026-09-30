@@ -4,7 +4,7 @@
 
 The DAS CMD API is a **plain-text TCP socket protocol**.
 
-- **Connection**: `localhost:9910`
+- **Connection**: `127.0.0.1:<port>` — the port is whatever DAS is configured with (`CMDAPI:PORT` in `Config.cfg`, Setup → Other Configuration); 9910 is only the factory default. Never assume it.
 - **Requirement**: DAS Trader Pro must be running on the **same machine** as your client
 - **Security**: No TLS — plain text only, local connections only
 - **Concurrency**: **One connection at a time** — either your bot OR the DAS GUI has API access, not both simultaneously
@@ -13,7 +13,7 @@ The DAS CMD API is a **plain-text TCP socket protocol**.
 
 | Tier | Connection | Use Case | Notes |
 |---|---|---|---|
-| CMD API | TCP localhost:9910 | Automation on same machine | Most common; plain text |
+| CMD API | TCP 127.0.0.1:<configured port> | Automation on same machine | Most common; plain text; from WSL use mirrored networking so the source IP is loopback (DAS enforces an allow-IP mask) |
 | .NET API | Remote to DAS servers | Remote/cloud automation | More expensive |
 | FIX API | Remote, institutional | Order entry only, no data | Requires institutional arrangement |
 
@@ -22,9 +22,9 @@ The DAS CMD API is a **plain-text TCP socket protocol**.
 ## Connection Sequence
 
 ```
-1. Connect TCP socket to localhost:9910
-2. Send: LOGIN <username> <password> <account>
-3. Receive: LOGIN OK (or error)
+1. Connect TCP socket to 127.0.0.1:<configured port>
+2. Send: LOGIN <username> <password> <account> <mode>   (mode 0 = trading, 1 = watch/read-only)
+3. Receive: #LOGIN SUCCESSED, then the current %POS / %ORDER / %TRADE lines
 4. Begin sending commands / receiving responses
 ```
 
@@ -34,54 +34,50 @@ The DAS CMD API is a **plain-text TCP socket protocol**.
 
 | Command | Syntax | Description |
 |---|---|---|
-| `LOGIN` | `LOGIN user pass account` | Authenticate and select account |
+| `LOGIN` | `LOGIN user pass account [0|1]` | Authenticate and select account; 1 = watch mode |
 | `NEWORDER` | See parameters below | Place a new order |
 | `CANCEL` | `CANCEL <order_id>` | Cancel specific order |
 | `CANCEL ALL` | `CANCEL ALL` | Cancel all open orders |
-| `SUBSCRIBE LEVEL1` | `SUBSCRIBE LEVEL1 <SYMBOL>` | Subscribe to Level 1 quote stream |
-| `GETPOSITION` | `GETPOSITION` | Get all current positions |
-| `GETBUYINGPOWER` | `GETBUYINGPOWER` | Get current buying power |
-| `GETORDER` | `GETORDER` | Get all open orders |
-| `LOCATEORDER` | `LOCATEORDER <params>` | Automate HTB share locate |
+| `SB` / `UNSB` | `SB <symbol> Lv1|Lv2|tms|MINCHART|DAYCHART` | Subscribe / unsubscribe quote, depth, T&S, bars |
+| `POSREFRESH` | `POSREFRESH` | Re-send all positions as `%POS` lines |
+| `GET BP` | `GET BP` | Buying power |
+| `GET SHORTINFO` | `GET SHORTINFO <symbol>` | Shortable / marginable info |
+| `SCRIPT` | `SCRIPT <WindowName> <script>` | Run a hotkey script in a DAS window (`GLOBALSCRIPT` for window-independent commands such as `ShowAccount <acct>`) |
 
 ---
 
-## NEWORDER Parameters
+## NEWORDER Syntax (positional — verified against the manual and a live instance)
 
-| Parameter | Values | Description |
-|---|---|---|
-| `SYMBOL` | e.g., `AAPL` | Ticker symbol |
-| `SIDE` | `B`, `S`, `SS`, `BC` | Buy / Sell / Short Sell / Buy to Cover |
-| `PRICE` | Numeric | Limit price (use 0 for market) |
-| `SHARE` | Integer | Number of shares |
-| `ROUTE` | e.g., `ARCAL`, `SMRTL` | Routing destination |
-| `TIF` | `DAY`, `GTC`, `IOC`, etc. | Time in force |
-| `StopType` | `STOPMARKET`, `STOPLIMIT`, `STOPTRAILING`, `STOPRANGE` | For stop orders |
-| `StopPrice` | Numeric | Stop trigger price |
-| `TrailPrice` | Numeric | Trail offset (for STOPTRAILING) |
-| `LowPrice` | Numeric | Lower bound (for STOPRANGE) |
-| `HighPrice` | Numeric | Upper bound / profit target (for STOPRANGE) |
-
-**Example — Buy 100 AAPL at limit:**
 ```
-NEWORDER SYMBOL=AAPL SIDE=B PRICE=182.50 SHARE=100 ROUTE=ARCAL TIF=DAY
+NEWORDER <token> <B|S|SS> <symbol> <route> <shares> <price|MKT> [TIF=DAY|DAY+|IOC|GTC|...]
 ```
 
-**Example — Short sell with stop:**
+- `<token>` is your own correlation id; it comes back in the `%ORDER` line.
+- A bare `S` on smart routes opens a **short**; to close a long use `S` on `REB25L` (or the platform's close
+  route). `B` covers a short. Verify the side in `%POS` before and after.
+- `DAY+` = regular plus extended hours. Stop types (`STOPMKT`, `STOPLMT`, `STOPTRAILING`, `STOPRANGE`) and pegs
+  follow the manual's positional forms.
+
+**Example — buy-to-cover 11 shares at a limit, extended hours allowed:**
 ```
-NEWORDER SYMBOL=TSLA SIDE=SS PRICE=245.00 SHARE=50 ROUTE=ARCAL TIF=DAY StopType=STOPMARKET StopPrice=248.00
+NEWORDER SCH040000 B CAPR REB25L 11 9.08 DAY+
 ```
 
----
+The `NEWORDER SYMBOL=... SIDE=...` key/value form and the `GETPOSITION` / `GETBUYINGPOWER` commands that
+earlier revisions of this file listed are **rejected by DAS**; do not use them.
 
 ## Response Formats
 
-### Order Response (`%ORDER`)
+### Order / trade / position lines
 ```
-%ORDER <order_id> <symbol> <side> <price> <shares> <status> <filled> <avg_fill_price>
+%ORDER <id> <token> <symbol> <B/S> <type> <qty> <lvqty> <cxlqty> <price> <route> <status> <time> ... <account>
+%TRADE <id> <symbol> <B/S> <qty> <price> <route> <time> <orderid> ...
+%POS   <symbol> <type> <qty> <avgcost> <initqty> <initprice> <realized> <created> <unrealized>
 ```
-
-Status values: `PENDING`, `OPEN`, `FILLED`, `PARTIAL`, `CANCELED`, `REJECTED`
+Status values seen: `Sending`, `Accepted`, `Executed`, `Canceled`, `Rejected`.
+**`%POS` qty is unsigned**: a short shows the same positive qty as a long. Read the side from the trade
+history or the account object, never from the sign of the position. (A close script that used the sign
+doubled a short on 2026-09-25.)
 
 ### Quote Response (`$Quote`)
 ```

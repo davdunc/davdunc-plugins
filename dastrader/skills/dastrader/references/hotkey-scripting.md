@@ -280,3 +280,15 @@ Script=Route=ARCAL;Price=Ask+0.05;Share=100;TIF=DAY+;BUY=Send
 ```
 
 Assign hotkeys via: **Setup → Hot Key** or the montage button editor.
+
+## Window Commands Usable from the CMD API
+
+Sent as `SCRIPT GLOBALSCRIPT <command>` over the CMD API, these open windows without touching the GUI:
+
+| Command | Effect |
+|---|---|
+| `ShowAccount <account>` | Opens the Account Report window for that account (`WndFrm5678`, title `Account Report  --- <account>`), which has an Export button |
+| `ShowStatistic` | Opens the statistics report window |
+| `ShowAllHiddenWindows` | Reveals hidden montage/chart windows |
+
+There is **no** command that opens Trade → Reports (Orders/Executions/Tickets); see `references/eod-report-export.md`.
