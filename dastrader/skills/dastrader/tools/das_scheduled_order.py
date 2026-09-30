@@ -49,7 +49,8 @@ if a.dry_run:
 tok = "SCH" + time.strftime("%H%M%S")
 send(f"NEWORDER {tok} {a.side} {a.symbol} {a.route} {a.qty} {a.price} {a.tif}")
 lines = read(8)
-orders = [l for l in lines if l.startswith("%ORDER") and f" {tok} " in l]
+# DAS does not echo the client token in %ORDER (field 2 is its own ref); match on symbol/side/route/price
+orders = [l for l in lines if l.startswith("%ORDER") and re.search(rf"%ORDER \S+ \S+ {re.escape(a.symbol)} {a.side[0]} \S+ .* {re.escape(a.route)} ", l) and str(float(a.price)) in [str(float(x)) for x in re.findall(r"\b\d+\.\d+\b", l)]]
 trades = [l for l in lines if l.startswith("%TRADE") and a.symbol in l]
 errs = [l for l in lines if l.startswith("#") and re.search(r"reject|error|fail|invalid", l, re.I)]
 for l in orders + trades + errs: L(l)
