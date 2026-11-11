@@ -82,7 +82,7 @@ Full validated column ID range: 0–150. See JSON schema at:
 - **Endpoint:** `https://cdn.cboe.com/api/global/delayed_quotes/options/{SYM}.json` (index roots take an underscore prefix, e.g. `SPX` → `_SPX`)
 - **No API key required** (public CDN; send a `User-Agent` header)
 - **Key fields:** `open_interest`, `iv`, `gamma`, `delta` per contract; `current_price` for spot
-- **Used for:** `Tools/spy_gex_compute.py` — dealer net gamma, zero-gamma flip, magnet strikes
+- **Used for:** `tradekit gex` (module `tradekit.analysis.gex`) — dealer net gamma, zero-gamma flip, magnet strikes. Ships in [tradekit](https://github.com/davdunc/tradekit), not in this plugin
 - **Why CBOE:** open interest is an end-of-day figure (it doesn't move intraday), so a ~15-min-delayed EOD-settled feed is *correct* for a morning GEX. yfinance's `openInterest` returned 0; provider options tiers may not be entitled.
 
 ## SEC EDGAR

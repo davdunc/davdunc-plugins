@@ -17,14 +17,16 @@ Filters:
 - Each leg: 5 shares (or your standard offsides-short size)
 - Spaced ~30-60 seconds apart to ride the algo squeeze without front-running it
 
-Reference (MRVL 2026-06-02 SIM):
+Reference shape (three shorts scaled up into the squeeze):
 ```
-09:00:20  SS 5 @ $255.00  REB25
-09:00:54  SS 5 @ $256.00  REB25
-09:01:51  SS 5 @ $258.00  REB25
-                        ─────
-Avg short cost: $256.33  (15 shares)
+09:00:20  SS leg 1  REB25
+09:00:54  SS leg 2  REB25   ~0.4% higher
+09:01:51  SS leg 3  REB25   ~0.8% higher than leg 1
+                    ─────
+Average cost lands between legs 2 and 3
 ```
+Legs are equal-sized and spaced by time, not by a price grid — the point is to be filled
+progressively better as the algo pushes, not to pyramid.
 
 ### Cover — On the Morning Flush
 - Watch for VWAP rejection + first 1-min red bar with volume
@@ -32,15 +34,16 @@ Avg short cost: $256.33  (15 shares)
 - Use SMAT route for covers (BUY auto-closes shorts cleanly)
 - Cover in 3 legs as price reverses
 
-Reference (MRVL 2026-06-02 SIM):
+Reference shape (three covers inside the first ninety seconds):
 ```
-09:30:18  B  5 @ $253.07  SMAT  → +$16.32
-09:30:47  B  5 @ $254.74  SMAT  → +$7.97
-09:31:03  B  5 @ $254.62  SMAT  → +$8.57
-                                 ─────
-Realized: +$32.86 net on 15 shares
-~$2.19/share avg = ~+0.85% per share
+09:30:18  B  leg 1  SMAT
+09:30:47  B  leg 2  SMAT
+09:31:03  B  leg 3  SMAT
+                    ─────
+~0.85% per share average across the three legs
 ```
+The percentage is the number that transfers. Absolute P&L depends on the size the account
+can carry, and a size that fits one book is wrong for another.
 
 ### Optional 4th Buy — Starter Long on the Reclaim
 If price bounces decisively off the post-flush low, a small starter long (5sh) for the bounce is OK — but treat as a separate trade with its own stop, not part of the offsides-short P&L.
@@ -48,13 +51,12 @@ If price bounces decisively off the post-flush low, a small starter long (5sh) f
 ## Risk Frame
 - **Pre-defined invalidation**: if stock holds above the post-open high for more than 2 bars (5-min), the squeeze is winning — cover the leg(s) at small loss and abandon. Don't add against momentum.
 - **Time stop**: if flush hasn't started by minute 5 post-open, the algo isn't tiring — exit flat.
-- **Per-symbol stop lockout**: respect the $280/ticker hard stop. If 3 legs at 5 shares each = 15sh × ~$256 = $3840 notional, a $280 loss = ~7.3% adverse move = $18.67/share. Set DAS stop accordingly.
+- **Per-symbol stop lockout**: respect the 1R per-ticker hard stop from the R-CONFIG. Size the legs from `max_shares = 1R / (1.5 × ATR)` and set the DAS stop at that distance — never from notional, which is the cost of the position and says nothing about its risk.
 
-## Cross-Account Coordination (per 2026-06-02 reference)
+## Cross-Account Coordination
 This setup works on BOTH accounts when the plan pre-assigns scope:
-- **SIM**: clean 3-leg execution per template above (+$32.85 net)
-- **LIVE**: larger position (27sh both sides via 20 round-trip fills, +$11.86 net) — more iterative execution, less clean structure, but profitable
-- **Combined**: +$44.71 on a single setup across both accounts
+- **SIM**: clean three-leg execution per the template above
+- **LIVE**: the same setup taken larger tends to fragment into many more round-trips — more iterative, less clean structure, and the round-trip count is where the edge leaks
 - **Key rule**: pre-assign which account gets which size in the morning gameplan. Don't decide mid-tape ("account separation" pattern).
 
 ## Anti-Patterns to Avoid
@@ -64,10 +66,13 @@ This setup works on BOTH accounts when the plan pre-assigns scope:
 - Don't average down if the squeeze keeps going — that's the MU/AMD grind pattern
 
 ## Reference Trades
-| Date | Symbol | Account | Z-score | Legs | Realized | Notes |
-|------|--------|---------|---------|------|----------|-------|
-| 2026-06-02 | MRVL | SIM {{SIM_ACCOUNT}} | +5.34σ | 3-leg SS / 3-leg cover | +$32.85 | Template trade — cleanest reference |
-| 2026-06-02 | MRVL | LIVE {{LIVE_ACCOUNT}} | +5.34σ | 20 round-trip fills | +$11.86 | Same thesis, larger size, more iterative |
+| Symbol | Z-score | Legs | Outcome | Notes |
+|--------|---------|------|---------|-------|
+| MRVL | +5.34σ | 3-leg SS / 3-leg cover | green | Template trade — the cleanest reference for this setup |
+| MRVL | +5.34σ | 20 round-trip fills | green, but far less per fill | Same thesis and same session taken larger; the structure fragmented and most of the edge went with it |
+
+The pair is the lesson: identical thesis, identical tape, and the disciplined three-leg version
+kept what the twenty-fill version gave away. Round-trip count is the leak.
 
 ## Linked Memories
 - [[das-sell-opens-short-not-close]] — Route SMRTL vs REB25 matters
