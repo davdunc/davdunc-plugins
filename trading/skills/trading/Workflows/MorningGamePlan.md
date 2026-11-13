@@ -9,8 +9,8 @@ description: Build the daily morning game plan with market data, intelligence, a
 **Before Phase 1, pull the prior session's evening videos. If they are missing, say so in the published plan — do not proceed silently.**
 
 ```bash
-python3 ~/.claude/Tools/video_intel.py                    # prior session, all channels
-python3 ~/.claude/Tools/video_intel.py --date 2026-07-27  # explicit date
+python3 ${CLAUDE_SKILL_DIR}/Tools/video_intel.py                    # prior session, all channels
+python3 ${CLAUDE_SKILL_DIR}/Tools/video_intel.py --date 2026-07-27  # explicit date
 ```
 
 Channels come from `AnalystSources.md` (`**Channel ID:**` lines). Registering a channel there is the only step needed to add it. Transcripts cache to `Intelligence/transcripts/`.

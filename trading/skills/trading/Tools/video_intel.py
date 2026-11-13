@@ -43,13 +43,14 @@ import urllib.request
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
-# Resolution order, first hit wins: explicit override, the copy shipped beside
-# this file inside the plugin, then a locally-installed trading skill. Keeping
-# all three means the tool works whether it is run from a plugin checkout or
-# from a personal ~/.claude skill directory.
+# Resolution order, first hit wins: explicit override, the user's personal
+# channel list, then the default list shipped beside this file in the plugin.
+# The personal list wins because it is the user's own configuration (it may
+# carry channels the public plugin does not ship); the bundled list is only a
+# fallback for users who have not made one.
 SOURCE_CANDIDATES = [
-    Path(__file__).resolve().parent.parent / "Reference" / "AnalystSources.md",
     Path.home() / ".claude" / "skills" / "Trading" / "AnalystSources.md",
+    Path(__file__).resolve().parent.parent / "Reference" / "AnalystSources.md",
 ]
 if os.environ.get("ANALYST_SOURCES"):
     SOURCE_CANDIDATES.insert(0, Path(os.environ["ANALYST_SOURCES"]))
