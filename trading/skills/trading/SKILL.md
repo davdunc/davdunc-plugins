@@ -7,6 +7,10 @@ description: Intraday trading intelligence system — morning game plans, trade 
 
 Intraday momentum trading intelligence system for davdunc. Integrates DAS Trader exports, Finviz screener, Massive.com OHLCV, SEC EDGAR filings, and analyst content extraction into a searchable intelligence base that powers daily game plans.
 
+## Bundled Tools
+
+This skill's scripts live in `${CLAUDE_SKILL_DIR}/Tools/`. Workflows call them by that path (for example `python3 ${CLAUDE_SKILL_DIR}/Tools/video_intel.py`); use the directory shown here, never a copy elsewhere such as `~/.claude/Tools/`.
+
 ## Customization
 
 **Before executing, check for user customizations at:**

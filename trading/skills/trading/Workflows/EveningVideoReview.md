@@ -48,9 +48,9 @@ Authoritative list lives in `AnalystSources.md`; `video_intel.py --list` prints 
 Run `video_intel.py` for all registered channels at once:
 
 ```bash
-python3 ~/.claude/Tools/video_intel.py                    # prior session, every channel
-python3 ~/.claude/Tools/video_intel.py --date 2026-07-27  # explicit date
-python3 ~/.claude/Tools/video_intel.py --channel StockedUp
+python3 ${CLAUDE_SKILL_DIR}/Tools/video_intel.py                    # prior session, every channel
+python3 ${CLAUDE_SKILL_DIR}/Tools/video_intel.py --date 2026-07-27  # explicit date
+python3 ${CLAUDE_SKILL_DIR}/Tools/video_intel.py --channel StockedUp
 ```
 
 Channels come from `AnalystSources.md` — any `### Name` block with a `**Channel ID:**` line is
@@ -70,13 +70,13 @@ to recap-style titles; StockedUp and Kristen Zisek are unfiltered. Non-matching 
 as `skipped (title filter)` on stderr — they are never dropped silently. To take everything anyway:
 
 ```bash
-python3 ~/.claude/Tools/video_intel.py --all
+python3 ${CLAUDE_SKILL_DIR}/Tools/video_intel.py --all
 ```
 
 To pull one specific video regardless of channel, date window or filter, pass its ID:
 
 ```bash
-python3 ~/.claude/Tools/video_intel.py VIDEO_ID [VIDEO_ID ...]
+python3 ${CLAUDE_SKILL_DIR}/Tools/video_intel.py VIDEO_ID [VIDEO_ID ...]
 ```
 
 ### Step 2 — Extract transcripts

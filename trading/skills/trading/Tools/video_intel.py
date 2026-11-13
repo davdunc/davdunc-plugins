@@ -34,20 +34,23 @@ Requires `fabric` on PATH for transcript extraction.
 import argparse
 import html
 import os
+import random
 import re
 import subprocess
 import sys
+import time
 import urllib.request
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
-# Resolution order, first hit wins: explicit override, the copy shipped beside
-# this file inside the plugin, then a locally-installed trading skill. Keeping
-# all three means the tool works whether it is run from a plugin checkout or
-# from a personal ~/.claude skill directory.
+# Resolution order, first hit wins: explicit override, the user's personal
+# channel list, then the default list shipped beside this file in the plugin.
+# The personal list wins because it is the user's own configuration (it may
+# carry channels the public plugin does not ship); the bundled list is only a
+# fallback for users who have not made one.
 SOURCE_CANDIDATES = [
-    Path(__file__).resolve().parent.parent / "Reference" / "AnalystSources.md",
     Path.home() / ".claude" / "skills" / "Trading" / "AnalystSources.md",
+    Path(__file__).resolve().parent.parent / "Reference" / "AnalystSources.md",
 ]
 if os.environ.get("ANALYST_SOURCES"):
     SOURCE_CANDIDATES.insert(0, Path(os.environ["ANALYST_SOURCES"]))
@@ -123,6 +126,25 @@ def feed(channel_id: str) -> list[dict]:
     return vids
 
 
+# YouTube rate-limits subtitle downloads (HTTP 429) after a burst of requests.
+# On 2026-11-13 three fetches succeeded and the next seven failed; the old code
+# labelled them "empty" and the game plan read that as "no recap published".
+# A failed fetch is NOT an absence of content — report it loudly, never as empty.
+#
+# Incremental backoff, two layers:
+#  - pacing: a gap between fetches that doubles after every 429 (up to a cap),
+#    so the rest of the run slows down instead of hammering the limit;
+#  - retry: each rate-limited video is retried after 30s, 60s, 120s, 240s
+#    (plus jitter). If a video exhausts its retries, the limit is not clearing,
+#    so the breaker opens and remaining fetches fail fast as rate-limited.
+BASE_GAP_S = 10
+MAX_GAP_S = 120
+RETRY_BASE_S = 30
+MAX_RETRIES = 4
+FAILURES = {"failed": 0, "rate_limited": 0}
+_state = {"gap": BASE_GAP_S, "last": 0.0, "breaker_open": False}
+
+
 def fetch_and_report(video_id: str, label: str, path: Path) -> bool:
     """Transcribe one video to `path` and print the standard three-line block."""
     ok, note = transcript(video_id, path)
@@ -132,22 +154,69 @@ def fetch_and_report(video_id: str, label: str, path: Path) -> bool:
     return ok
 
 
-def transcript(video_id: str, out_path: Path) -> tuple[bool, str]:
-    if out_path.exists() and out_path.stat().st_size > 500:
-        return True, "cached"
+def _run_fabric(video_id: str) -> subprocess.CompletedProcess:
+    wait = _state["gap"] - (time.monotonic() - _state["last"])
+    if _state["last"] and wait > 0:
+        time.sleep(wait)
     try:
-        r = subprocess.run(
+        return subprocess.run(
             ["fabric", "-y", f"https://www.youtube.com/watch?v={video_id}",
              "--transcript"],
             capture_output=True, text=True, timeout=300)
-    except subprocess.TimeoutExpired:
-        return False, "timeout"
-    except FileNotFoundError:
-        return False, "fabric not installed"
-    if r.returncode != 0 or len(r.stdout) < 500:
-        return False, f"empty (rc={r.returncode})"
-    out_path.write_text(r.stdout)
-    return True, f"{len(r.stdout):,} chars"
+    finally:
+        _state["last"] = time.monotonic()
+
+
+def _rate_limited_failure() -> tuple[bool, str]:
+    FAILURES["failed"] += 1
+    FAILURES["rate_limited"] += 1
+    return False, ("FETCH FAILED: RATE-LIMITED by YouTube (HTTP 429) — video "
+                   "exists, transcript not fetched; retry later")
+
+
+def transcript(video_id: str, out_path: Path) -> tuple[bool, str]:
+    if out_path.exists() and out_path.stat().st_size > 500:
+        return True, "cached"
+    if _state["breaker_open"]:
+        return _rate_limited_failure()
+    for attempt in range(MAX_RETRIES + 1):
+        try:
+            r = _run_fabric(video_id)
+        except subprocess.TimeoutExpired:
+            FAILURES["failed"] += 1
+            return False, "FETCH FAILED: timeout (video exists; transcript not fetched)"
+        except FileNotFoundError:
+            FAILURES["failed"] += 1
+            return False, "FETCH FAILED: fabric not installed"
+        if r.returncode == 0 and len(r.stdout) >= 500:
+            out_path.write_text(r.stdout)
+            return True, f"{len(r.stdout):,} chars"
+        diag = f"{r.stderr}\n{r.stdout}".strip()
+        if "rate limit" in diag.lower() or "429" in diag:
+            _state["gap"] = min(_state["gap"] * 2, MAX_GAP_S)
+            if attempt < MAX_RETRIES:
+                delay = RETRY_BASE_S * 2 ** attempt + random.uniform(0, 5)
+                print(f"    rate-limited by YouTube; retry {attempt + 1}/{MAX_RETRIES} "
+                      f"in {delay:.0f}s (pacing now {_state['gap']}s)", file=sys.stderr)
+                time.sleep(delay)
+                continue
+            _state["breaker_open"] = True
+            return _rate_limited_failure()
+        FAILURES["failed"] += 1
+        reason = diag.splitlines()[-1][:160] if diag else "no output"
+        return False, f"FETCH FAILED (rc={r.returncode}): {reason}"
+    return _rate_limited_failure()
+
+
+def fetch_summary() -> int:
+    """Print a loud warning when any fetch failed; non-zero exit so callers notice."""
+    if not FAILURES["failed"]:
+        return 0
+    print(f"\n⚠ {FAILURES['failed']} transcript fetch(es) FAILED "
+          f"({FAILURES['rate_limited']} rate-limited by YouTube). These videos WERE "
+          "published — do not report them as empty or as 'no recap'. Re-run later; "
+          "cached transcripts are skipped.")
+    return 3
 
 
 def main() -> int:
@@ -187,7 +256,7 @@ def main() -> int:
                 print(f"https://www.youtube.com/watch?v={vid}")
                 continue
             fetch_and_report(vid, vid, OUTDIR / f"{stamp}_direct_{vid}.txt")
-        return 0
+        return fetch_summary()
 
     if not chans:
         print("No channels registered in AnalystSources.md", file=sys.stderr)
@@ -257,7 +326,7 @@ def main() -> int:
     if not found_any:
         print(f"\nNo videos found for {target}. Channels may not have posted yet, "
               "or the date is a market holiday.")
-    return 0
+    return fetch_summary()
 
 
 if __name__ == "__main__":
