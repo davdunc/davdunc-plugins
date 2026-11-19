@@ -65,7 +65,8 @@ Returns: Ticker, Price, Gap, Avg Volume, Relative Volume, Change, Volume
 
 ### Column Schema
 
-Full validated column ID range: 0–150. See JSON schema at:
+Full validated column ID range: 0–156 (schema 1.1.0, verified 2026-11-19). The
+`.ashx` paths now 301 to `/export` and `/news_export`, so follow redirects. See JSON schema at:
 `~/.claude/skills/Trading/Config/FinvizColumnSchema.json`
 
 ## Massive.com API
