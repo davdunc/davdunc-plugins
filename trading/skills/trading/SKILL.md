@@ -109,4 +109,4 @@ User: "ingest this video https://youtube.com/watch?v=xyz"
 - Analyst sources: `Reference/AnalystSources.md`
 - Report schema: `Reference/ReportingSchema.md`
 - Finviz export schema: `Config/FinvizColumnSchema.json` (+ `.CHANGELOG.md`)
-- Packaging contract (layout, public/private boundary, host tools): Kestrel `docs/SKILLS.md`
+- Packaging contract (layout, public/private boundary, host tools): `project-specs/kestrel/SKILLS.md`
