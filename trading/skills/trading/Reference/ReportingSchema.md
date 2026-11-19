@@ -64,12 +64,37 @@ not just add noise — it inverts the sign.
 sourced from the `PREFERENCES.md` R-CONFIG. That block is the only authority; no other file may
 hard-code a dollar figure, and this public repo publishes none.
 
-> **Resolved 2026-08-05 (operator decision).** `SKILL.md` and `RulesOfEngagement.md` had carried
-> **1% per trade** against PREFERENCES' **0.1%** — a 10× split from a single decimal place. The
-> 0.1% figure is correct and matches every review scored to date. All three files plus
-> `MorningGamePlan.md`'s worked example were corrected. Verify against the trader-desk S3 copy
-> when next reachable; this machine is documented to drift.
+### R has two meanings — keep them apart
+
+| | What it is | Where it comes from |
+|---|---|---|
+| **The R-value** | The operator-declared **maximum dollar risk per trade**. A *sizing input*, chosen in advance. | `PREFERENCES.md` R-CONFIG. **Editable. Authoritative. Per account.** |
+| **Per-trade R** | The risk a specific trade **actually took**: `abs(entry − planned_stop) × shares`. A *measurement*, derived after the fact. | The stop order in `Orders.csv`. Not configurable. |
+
+A review reports per-trade R **as a multiple of** the R-value. Confusing the two is how a
+green session was once reported as a net loss in R.
+
+### The R-value must be read at runtime, never copied
+
+Any program that needs R **reads the R-CONFIG block**; it does not embed the number.
+If the block is missing or unparseable the program **fails loudly** — it must never fall
+back to a literal.
+
+> ⚠️ **Not yet true in code.** `falcon-stats size` hard-codes a dollar literal (the stale 1%
+> figure) in `sizer.py` and `cli.py`, so omitting `--risk` sizes for **10× the declared maximum**. Nothing in
+> `falcon_stats/` reads `PREFERENCES.md` at all. Tracked as
+> `falcon-stats docs/specs/003-r-config-single-source.md`.
 >
+> Until that ships, this rule is **ASPIRATIONAL for code** under Rule 0 — editing
+> `PREFERENCES.md` changes what workflows do and nothing that programs do. That gap is
+> where the 1% vs 0.1% error survived for twelve days.
+
+> **Resolved 2026-08-05 (operator decision).** `SKILL.md` and `RulesOfEngagement.md` had
+> carried **1% per trade** against PREFERENCES' **0.1%** — a 10× split from a single decimal
+> place. The 0.1% figure is correct and matches every review scored to date. All three files
+> plus `MorningGamePlan.md`'s worked example were corrected. Verify against the trader-desk S3
+> copy when next reachable; this machine is documented to drift.
+
 > The lesson generalises past the number: a risk constant duplicated across four files will
 > diverge, and the copy that diverges is the one nobody scores against. Keep the value in
 > R-CONFIG and the *ratio* in the docs.
@@ -94,14 +119,17 @@ total.** (Both 07-30 and 08-04 reported a total with no per-criterion breakdown.
 | # | Criterion | Pts |
 |---|---|:--:|
 | 1 | Followed the published game plan, not screen impulses | 2 |
-| 2 | Only playbook setups | 1 |
+| 2 | Only playbook setups | 2 |
 | 3 | Honored stops; no averaging down | 2 |
 | 4 | No revenge trading | 1 |
 | 5 | Paused / reset after losses | 1 |
-| 6 | Took the thesis trade with conviction sizing | 1 |
-| 7 | Conviction sizing, not scattered small lots | 1 |
-| 8 | Account separation — LIVE served the plan | 1 |
+| 6 | Took the thesis trade live | 1 |
+| 7 | Appropriate sizing (1.5×ATR at entry, conviction not scattered lots) | 1 |
 | | **Total** | **10** |
+
+*Decided 2026-10-21 (Kestrel SPEC D-2): this is the DailyReview rubric, which every published
+score has used. The earlier 8-criterion version (playbook 1, plus account separation 1) is
+retired so scores stay comparable over time.*
 
 ## Rule 6 — canonical comparison columns
 
@@ -116,29 +144,38 @@ Every multi-day table — DailyReview "Compare to prior days", "Multi-Day Trend"
 - `Discipline` = `N/10` from Rule 5.
 - `Avg Grade` = mean of executed-trade grades on the Rule 4 ladder.
 
-**`Workflows/DailyReview.md:310` currently templates `LIVE Execs` and must be corrected** —
-it contradicts both this rule and its own Step 0.
+*Confirmed 2026-10-21 (Kestrel SPEC D-6): `Avg Grade` stays. Discipline scores plan adherence;
+Avg Grade scores execution. The DailyReview Multi-Day Trend template was corrected to these
+columns the same day (it had `LIVE Execs` and no `Avg Grade`).*
 
 ## Rule 7 — file naming
 
 ```
 Reviews/YYYY-MM-DD-gameplan.md          game plan
 Reviews/YYYY-MM-DD-review.md            daily report card
-Reviews/YYYY-MM-DD-blotter.html         round-trip blotter
+Reviews/YYYY-MM-DD-blotter/*.png        round-trip charts (one per RT; uploaded to Notion)
+Reviews/YYYY-MM-DD-blotter.html         local index page linking the PNGs in RT order
 Reviews/YYYY-MM-DD-evening-notes.md     evening video review
 Reviews/YYYY-MM-DD-<topic>.md           anything else
 ```
 
-Lowercase, ISO date first, one convention. The `REVIEW-YYYY-MM-DD.md` form is **deprecated**;
-existing files stay, new ones use the above.
+Local files: lowercase, ISO date first, as above.
+
+**Private Google Drive copies keep the type-first form:** `GAMEPLAN-YYYY-MM-DD.md` and
+`REVIEW-YYYY-MM-DD.md`, so the Drive folder groups by artifact type. *(Decided 2026-10-21,
+Kestrel SPEC D-5. This replaces the earlier note that deprecated the `REVIEW-` form.)*
 
 ## Rule 8 — channel routing by privacy class
 
 | Class | Contains | Goes to | Never |
 |---|---|---|---|
-| **PUBLIC** | levels, tickers, thesis | Slack `#general`, Notion | any P&L, account id, R total |
-| **PRIVATE** | P&L, R, discipline, account ids | Google Drive, Discord report-card forum | Slack, Notion |
+| **PUBLIC** | levels, tickers, thesis, R-multiples, R total, discipline score, grades | Slack `#watchlist` (game plan), Slack `#general` (review card), Notion, Discord game-plan webhook, Discord report-card forum | dollar P&L, account ids, share counts, LIVE/SIM assignment, multi-day R history |
+| **PRIVATE** | dollar P&L, account ids, share counts, behavioral contract | Google Drive | Slack, Notion, Discord |
 | **LOCAL** | full detail | `USER/TRADING/Reviews/` | — |
+
+*Decided 2026-10-21 (Kestrel SPEC D-1): the R total and discipline score are PUBLIC as R-units
+only. The earlier version of this rule marked them PRIVATE; that conflicted with the DailyReview
+workflow and every review actually published.*
 
 Every artifact carries a footer declaring its class. Public versions strip methodology
 pedagogy entirely. Discord report-card is a **forum** — new posts need `thread_name`.

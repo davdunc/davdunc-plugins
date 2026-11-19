@@ -51,7 +51,7 @@ This skill's scripts live in `${CLAUDE_SKILL_DIR}/Tools/`. Workflows call them b
 | **IngestTrades** | "ingest trades", "review trades", "daily report" | `Workflows/IngestTrades.md` |
 | **DailyReview** | "daily review", "report card", "how did I do" | `Workflows/DailyReview.md` |
 | **WeeklyReview** | "weekly review", "week summary" | `Workflows/WeeklyReview.md` |
-| **WeeklyReadiness** | "weekly readiness", "build my weekly review", "sunday prep", "week ahead" | `Workflows/WeeklyReadiness.md` |
+| **WeeklyReadiness** | "weekly readiness", "build my weekly review", "sunday prep", "week ahead" | `Workflows/WeeklyReadiness.md` (pointer to the weekly-readiness repo) |
 | **ResearchTicker** | "research TICKER", "look up TICKER", "what's the story on" | `Workflows/ResearchTicker.md` |
 | **IngestContent** | "ingest video", "extract from youtube", "add analyst content" | `Workflows/IngestContent.md` |
 | **QueryIntelligence** | "what does my intel say", "search intelligence", "what do analysts say" | `Workflows/QueryIntelligence.md` |
@@ -93,7 +93,7 @@ User: "ingest this video https://youtube.com/watch?v=xyz"
 ## Quick Reference
 
 - **Accounts:** {{LIVE_ACCOUNT}} (live/Cobra), {{SIM_ACCOUNT}} (sim)
-- **Time zone:** Central — market open 8:30 CT
+- **Time zone:** all times in **ET** (Kestrel D-20) — market open 09:30 ET. Convert only at a scheduler edge if the host runs in another zone
 - **Platform:** DAS Trader Pro + ThinkorSwim (Bookmap)
 - **Strategies:** Momentum — gaps, breakouts, VWAP, ORB, 9EMA x VWAP/21EMA
 - **Risk:** **1R = 0.1% of LIVE working capital**; SIM carries its own operator-set 1R.
@@ -103,7 +103,10 @@ User: "ingest this video https://youtube.com/watch?v=xyz"
   a 10x overstatement that contradicted every review ever scored.)*
 
 **Full Documentation:**
-- Setup definitions: `PlaybookSetups.md`
-- Trading rules: `RulesOfEngagement.md`
-- Data source APIs: `DataSources.md`
-- Analyst sources: `AnalystSources.md`
+- Setup definitions: `Reference/PlaybookSetups.md`
+- Trading rules: `Reference/RulesOfEngagement.md`
+- Data source APIs: `Reference/DataSources.md`
+- Analyst sources: `Reference/AnalystSources.md`
+- Report schema: `Reference/ReportingSchema.md`
+- Finviz export schema: `Config/FinvizColumnSchema.json` (+ `.CHANGELOG.md`)
+- Packaging contract (layout, public/private boundary, host tools): Kestrel `docs/SKILLS.md`

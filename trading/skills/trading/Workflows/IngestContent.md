@@ -69,7 +69,7 @@ For each extracted insight:
 [The actual insight/quote/technique]
 ```
 
-### 5. Update AnalystSources.md
+### 5. Update Reference/AnalystSources.md
 
 If this is a new source, add it to `~/.claude/skills/Trading/AnalystSources.md` with:
 - Platform, URL, Focus area, Key value

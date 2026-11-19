@@ -96,6 +96,17 @@ identifier is committed to the public plugin. Define each in this file; the
 | `{{SLACK_PUBLIC_ID}}` | Slack channel for PUBLIC artifacts (levels, tickers, thesis) | `C01234ABCDE` |
 | `{{SLACK_CLUSTER_ID}}` | Slack channel for agent-to-agent cluster beacons | `C01234FGHIJ` |
 | `{{WINDOWS_HOME}}` | Windows user home as seen from WSL | `/mnt/c/Users/<you>` |
+| `{{SLACK_WATCHLIST_ID}}` | Private Slack channel the morning game plan posts to (`#watchlist`) | `C01234KLMNO` |
+| `{{SLACK_WORKSPACE}}` | Slack workspace name that holds the channels above | `my-trading-desk` |
+| `{{NOTION_GAMEPLAN_DB}}` | Notion database holding the daily game plan + weekly readiness pages | `collection://<uuid>` |
+| `{{NOTION_FRESH_NEWS_DS}}` | Notion data source for same-day catalyst (Fresh News) sub-entries | `collection://<uuid>` |
+| `{{NOTION_SECOND_DAY_DS}}` | Notion data source for continuation (Second Day Plays) sub-entries | `collection://<uuid>` |
+| `{{DRIVE_GAMEPLAN_FOLDER_ID}}` | Google Drive folder id for the PRIVATE `Game_Plan` copies | `<drive-folder-id>` |
+| `{{AWS_PROFILE}}` | AWS CLI profile that can read the `falcon-trades` DynamoDB table | `trading-workstation` |
+| `{{AWS_REGION}}` | Region of the `falcon-trades` table | `us-east-1` |
+| `{{DAS_HOTKEYS_REPO}}` | Root of your DAS-hotkeys backtest/playbook repo | `~/Projects/DAS-hotkeys` |
+| `{{WEEKLY_READINESS_CHANNELS}}` | Weekly readiness project's channel config | `~/Projects/weekly-readiness/Config/youtube-channels.json` |
 
-**Never** commit a resolved value back into the plugin. PUBLIC artifacts carry no P&L,
-account id, or R total — see `Reference/ReportingSchema.md` Rule 8.
+**Never** commit a resolved value back into the plugin. PUBLIC artifacts carry no dollar P&L,
+account id, or share count; R-multiples, the R total and the discipline score are public as
+R-units only — see `Reference/ReportingSchema.md` Rule 8 (Kestrel D-1).
