@@ -34,7 +34,7 @@ specific document. Requires a descriptive `User-Agent` with contact info (`EDGAR
 sec.gov returns 403 — this is not optional and not a bug to route around.
 
 - Last 30 days of 8-K, 10-Q, S-1, SC 13D, Form 4
-- Extract catalyst keywords from filing descriptions (see `DataSources.md` for the list)
+- Extract catalyst keywords from filing descriptions (see `Reference/DataSources.md` for the list)
 - **Dilution check (ATM/shelf offerings, resale registrations, warrant overhang):** read S-3, 424B5,
   424B3 filings — search for "at-the-market", registered resale share counts, and warrant strike
   prices vs. shares outstanding. A news-only scan misses all of these; see the worked USDE example in
@@ -56,7 +56,7 @@ Search the intelligence base for:
 ### 5. Match to Playbook Setup
 
 Based on the data gathered, determine:
-- Which playbook setup does this match? (per PlaybookSetups.md)
+- Which playbook setup does this match? (per Reference/PlaybookSetups.md)
 - What grade would this get? (A+ through C)
 - Long bias, short bias, or neutral?
 

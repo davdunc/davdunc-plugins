@@ -32,7 +32,7 @@ Anything from 21:00 ET on works. 21:30 ET is the default for buffer.
 
 ## Channels
 
-Authoritative list lives in `AnalystSources.md`; `video_intel.py --list` prints it. Current state:
+Authoritative list lives in `Reference/AnalystSources.md`; `video_intel.py --list` prints it. Current state:
 
 | Channel            | Handle           | Format                                  | Filter |
 |--------------------|------------------|-----------------------------------------|--------|
@@ -53,7 +53,7 @@ python3 ${CLAUDE_SKILL_DIR}/Tools/video_intel.py --date 2026-07-27  # explicit d
 python3 ${CLAUDE_SKILL_DIR}/Tools/video_intel.py --channel StockedUp
 ```
 
-Channels come from `AnalystSources.md` — any `### Name` block with a `**Channel ID:**` line is
+Channels come from `Reference/AnalystSources.md` — any `### Name` block with a `**Channel ID:**` line is
 picked up automatically. Run `--list` to see what is registered and which channels are filtered.
 
 The tool handles the **UTC rollover**: evening hosts record after the ET close, so a "07/27" recap
@@ -65,7 +65,7 @@ If today is Saturday or Sunday the default already walks back to the most recent
 If a channel has no videos for the date, note it but continue with whichever channel has content.
 
 **Title filtering.** Channels that post many videos a day declare a `**Filter keywords:**` line in
-`AnalystSources.md` (backtick-quoted fragments). TraderTV Live posts 4+ videos/day and is filtered
+`Reference/AnalystSources.md` (backtick-quoted fragments). TraderTV Live posts 4+ videos/day and is filtered
 to recap-style titles; StockedUp and Kristen Zisek are unfiltered. Non-matching videos are reported
 as `skipped (title filter)` on stderr — they are never dropped silently. To take everything anyway:
 

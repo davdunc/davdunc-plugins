@@ -54,8 +54,8 @@ Which tickers appeared multiple days?
 ### 6. Update Recommendations
 
 Suggest updates to:
-- **PlaybookSetups.md** — new setups to add or refine
-- **RulesOfEngagement.md** — rules to add or modify
+- **Reference/PlaybookSetups.md** — new setups to add or refine
+- **Reference/RulesOfEngagement.md** — rules to add or modify
 - **TELOS** — lessons, wisdom, or challenge updates
 - **Intelligence base** — content to ingest or topics to research
 

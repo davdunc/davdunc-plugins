@@ -1,5 +1,25 @@
 # Data Sources
 
+## Source Priority (operator rule, 2026-10-06)
+
+**Collect from Massive (Polygon) first, wherever Massive has the data.** TradingView and Finviz are
+fallbacks for what Massive lacks. When a fallback is used, say so in the output and give the reason.
+
+| Need | First | Then |
+|---|---|---|
+| Prior-session OHLCV, pivots, ATR / z-score history | Massive REST aggs, or flat files for history | — |
+| Market-wide movers (prior day) | Massive grouped daily aggs (one call, ~12K tickers) | Finviz universe export |
+| Delayed snapshot / gainers / losers | Massive `/v2/snapshot/...` (**~15 min delayed**; drop rights/warrants/units) | TradingView screener |
+| News / catalysts | Massive news | video layer, then Finviz |
+| **Live** premarket / intraday quotes, triggers, sizing at entry | **DAS** (real-time) | TradingView only if DAS is down |
+| Float, short float, RVOL, group performance | Finviz Elite (universe cache) | — |
+| Options IV / GEX | CBOE (Massive options = 403 on the operator's plan) | — |
+| Economic calendar | TradingView | — |
+
+Massive is **not real-time on the operator's plan**: snapshots lag about 15 minutes and carry no last trade or quote.
+Never use them for a trigger. Budget: stocks are unlimited, but self-cap at **10 req/s** and never
+load-test (2026-10-06 operator rule: do not jeopardize access).
+
 ## Finviz Elite Export API
 
 - **Purpose:** Pre-market gap screener, ticker discovery, fundamentals + technicals snapshot
@@ -114,7 +134,7 @@ Full validated column ID range: 0–156 (schema 1.1.0, verified 2026-11-19). The
 - **Catalyst keywords:** acquisition, merger, partnership, offering, FDA, approval, contract, restructuring, bankruptcy, investigation
 
 ## DAS Trader Exports
-- **Path:** `{{WINDOWS_HOME}}/OneDrive/Desktop/Trade_Review/YYYY-MM/YYYY-MM-DD/`
+- **Path:** `{{WINDOWS_HOME}}/OneDrive/Desktop/Trade_Review/YYYY/MM/YYYY-MM-DD/`
 - **Files:**
   - `Trades.csv` — Individual executions (TradeID, Account, B/S, Symbol, Qty, Price, Time)
   - `Orders.csv` — Order history

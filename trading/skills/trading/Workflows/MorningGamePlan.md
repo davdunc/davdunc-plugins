@@ -13,7 +13,7 @@ python3 ${CLAUDE_SKILL_DIR}/Tools/video_intel.py                    # prior sess
 python3 ${CLAUDE_SKILL_DIR}/Tools/video_intel.py --date 2026-07-27  # explicit date
 ```
 
-Channels come from `AnalystSources.md` (`**Channel ID:**` lines). Registering a channel there is the only step needed to add it. Transcripts cache to `Intelligence/transcripts/`.
+Channels come from `Reference/AnalystSources.md` (`**Channel ID:**` lines). Registering a channel there is the only step needed to add it. Transcripts cache to `Intelligence/transcripts/`.
 
 **Why this is a hard rule and not advice:** on 2026-07-27 this workflow ran *without* the evening review, in direct violation of `[[evening-review-before-gameplan]]`. The published thesis was semis-long. Overnight, a Chinese memory maker (CXMT) had debuted +465% in Shanghai and China had begun mass-producing domestic lithography machines — the story that drove a two-day semiconductor unwind. **The Polygon newsfeed returned ZERO items** for every watchlist small cap and zero items market-wide after 08:00 ET on both days. The tape decay was measured correctly and could not be explained, because the only source carrying the catalyst was the video layer.
 
@@ -22,6 +22,15 @@ Automated newsfeeds do not cover this. Treat their silence as absence of coverag
 The videos also supply **pre-specified levels** worth more than the narrative — e.g. Blue Cloud's Ichimoku triggers (XLF >56.94, XLV >165.60) and StockedUp's breakpoints (TSM <388) all resolved exactly as stated.
 
 **Gotcha:** evening hosts record after the close ET, so a "07/27" recap can carry a UTC published stamp of 07-28. `video_intel.py` handles the rollover; a naive date filter will silently miss the most important video of the day.
+
+## ⛔ HARD RULE: Weekly Readiness Is the Foundation, Not a Parallel Process
+
+**Before Phase 1, check Notion (the Daily Game Plan database, `{{NOTION_GAMEPLAN_DB}}`) for a "Weekly Readiness — Week of [Date]" page whose date falls within the current Mon-Fri week.** If found, pull its watchlist, market regime, and discipline commitment into this run's context — the daily plan builds on the week's thesis, it doesn't re-derive it from scratch. If missing, **say so explicitly in the published plan** ("no weekly readiness review found for this week") rather than silently proceeding as if the week had no strategic frame.
+
+Weekly readiness itself is produced separately — `Workflows/WeeklyReadiness.md` in this skill, or
+the operator's standalone weekly-readiness repo — run manually by the operator, typically on the weekend.
+It is not scheduled and not guaranteed to exist every week; this check exists so a missing one is a
+visible gap, not a silent one. See `[[project-weekly-readiness-review]]`.
 
 ## ⛔ HARD RULE: Publish is Deterministic
 
@@ -58,12 +67,76 @@ session.**
 | # | Section | Must contain |
 |---|---|---|
 | 1 | **HEADER** | date · build time · intel-layer source + transcript count · R basis (LIVE/SIM) · daily max · max LIVE tickers · flat-check time |
-| 2 | **MACRO** | GEX snapshot **or the literal word UNAVAILABLE with the reason** · index levels · today's calendar |
+| 2 | **MACRO** | **Regime (dimensional) table from `tradekit regime --json`, or UNAVAILABLE with the reason** · GEX snapshot **or the literal word UNAVAILABLE with the reason** · **Volatility sub-table (IV30 / IVR / IV%ile / HV20 / IV/HV) for SPY + ACTIVE names, or UNAVAILABLE with the reason** · **Index sub-table (operator-requested 2026-10-01, see below)** · today's calendar |
 | 3 | **THESIS TRADE** | exactly **ONE** named `TICKER SIDE` · trigger · stop · target in R · one-sentence edge · setup tag. **`WAIT — no premarket thesis` is a valid entry**; do not manufacture one |
-| 4 | **WATCHLIST** | three labelled groups — **ACTIVE**, **DORMANT**, **WATCH-ONLY** — each a table with fixed columns `Ticker \| Bias \| Trigger \| Status \| Kill (CT)`. Admission gated per the rule below |
+| 4 | **WATCHLIST** | three labelled groups — **ACTIVE**, **DORMANT**, **WATCH-ONLY** — each a table with fixed columns `Ticker \| Bias \| Trigger \| Max sh @1R \| Status \| Kill (ET)`. Admission gated per the rule below |
 | 5 | **VALIDITY GATE** | which names pass, which fail, and **why** — named, not implied |
 | 6 | **RULES** | **exactly 3 bullets.** Not two, not five |
 | 7 | **FOOTER** | privacy class + channel manifest (which channels got which version) |
+
+### Index sub-table — fixed columns (operator request, 2026-10-01)
+
+Section 2 carries this table every session, in this column order, one row each for **SPY, QQQ,
+IWM, DIA, VIX, WTI, TLT**, plus any ETF carrying the day's sector read (SOXL, XLE, SLV, GLD):
+
+| | Prior close | Prior chg | Pivot | Premarket | PM vol | Read |
+|---|---:|---:|---:|---:|---:|---|
+
+- **Pivot** = classic daily pivot `(H + L + C) / 3` from the prior session's bar, or the operator's
+  own number when he supplies one (DIA 512 on 10-01 was operator-supplied; say so in the cell).
+  The Read column states where premarket sits relative to the pivot.
+- **PM vol** is stated beside every premarket price; a price on under ~50K shares is labelled thin.
+- **Read** is one clause: what the row means for today's board, not a description of the number.
+- Missing feeds are written UNAVAILABLE in the cell, never dropped (the 10-01 QQQ/IWM pivots were
+  UNAVAILABLE at build because only closes had been pulled).
+
+### Watchlist admission — the R-VIABILITY gate runs FIRST
+
+**Before the movement gate, before the chart, before anything: can 1R buy a position in this
+name?** This is not a rule to remember — it is a column, computed at build time:
+
+```bash
+python3 ~/.claude/Tools/sizing_column.py --table AAA BBB CCC DDD   # host tool, not bundled
+python3 ~/.claude/Tools/sizing_column.py AAA BBB CCC               # markdown rows for the board
+```
+
+`sizing_column.py` is a host tool the operator provides at that path; it is not bundled with
+this skill.
+
+`max_shares = R_VALUE / (MIN_STOP_ATR × premarket ATR14)`, both constants read from the
+PREFERENCES R-CONFIG. Exit 1 means at least one name is UNTRADEABLE or has no premarket data.
+
+**Under ~10 shares at LIVE R = not a watchlist candidate.** The tool prints `UNTRADEABLE` and
+the name never reaches the board — it is not demoted later after a chart looks good. It goes on a
+"right idea, wrong instrument" line and never enters ACTIVE, DORMANT or the thesis slot.
+
+At a small LIVE R this excludes most of the megacap tape. The table prints, per ticker,
+premarket ATR14, the stop distance (`MIN_STOP_ATR × ATR`), max shares at LIVE R and at SIM R, and a
+verdict: `ok`, `ok (thin)` for a name that is viable but only just, or `UNTRADEABLE`. The
+high-ATR name excludes itself without anyone having to decide.
+
+**Why this rule exists.** On 2026-08-28 the screen ran in the opposite order: it ranked by
+premarket movement and volume, promoted to thesis a name 1R could buy only a handful of shares
+of, left an untradeable name in ACTIVE all morning, and checked R-viability only on the winner —
+then used it to kill the trade. The names that actually moved cleanly that session were **all**
+labelled DORMANT, WATCH-ONLY or "not the trade," and two of them triggered within minutes of the
+open. The operator was left with a board where every tradeable name was pre-labelled do-not-trade
+and the published expectation was zero trades, so he sourced ideas elsewhere.
+
+**A plan that produces nothing actionable has not produced a WAIT — it has produced a vacuum,
+and the vacuum gets filled.** `WAIT` is legitimate only when the R-viable candidates were
+screened and genuinely none qualified. State how many were screened.
+
+**Corollary — never publish a conditional you predict will fail.** If the R math says a name is
+untradeable, the output is *the R-viable alternatives*, not a gate built to die. The 08-28 plan
+wrote "opening ranges on gap-down earnings names are usually wider than the premarket range" and
+then set the trigger condition at well under half the premarket range. That is not a plan, it is a
+prediction of no-trade dressed as one.
+
+**Corollary — a failing thesis is a signal, not a deletion.** A name was once downgraded from LONG
+to watch-only premarket because the long was breaking. It then fell 6%. The analysis was right and
+stopped one step short: when a directional thesis fails on real evidence, evaluate the other side
+before dropping the name.
 
 ### Watchlist admission — the premarket movement gate
 
@@ -145,8 +218,65 @@ Discord carries the **same sanitized payload as Slack #general** — one PUBLIC 
 - **Main page title:** `YYYY-MM-DD — TICKER SIDE` (e.g., `2026-06-04 — HPE SHORT`)
 - **Main page properties:** Status (DRAFT→PUBLISHED→UPDATED→REVIEWED), Thesis Ticker, Thesis Side, Thesis Outcome, Combined R, Discipline Score, Private Drive Link
 - **7-section fixed body structure:** HEADER callout → MACRO CONTEXT → THESIS TRADE → WATCHLIST table → RULES → INTRA-DAY UPDATES (appended) → EOD REVIEW (appended)
-- **Per-ticker sub-DB entries** created in `Fresh News` (collection://4fa7df7d-a224-40e1-918e-46ccec5088e7) for new same-day catalysts, and `Second Day Plays` (collection://3d16085b-bfa0-4cfb-a67c-ea119b6b90d3) for continuations/technical. Each entry has: Ticker, Bias (Long/Short/Neutral), Setup (multi-select per DB's options — note: Fresh News has "Earnings" option, Second Day Plays does NOT), Support, Resistance, Inflexion, Trading Plan, Notes, Date=today, Triggered (initially false), Outcome (TBD)
-- **Private Drive write:** save FULL version to `Game_Plan` folder (id `1krsep2YWSLe6-V72j-evU32lXj4Vcuym`) as `GAMEPLAN-YYYY-MM-DD.md`; cross-link from Notion page property
+- **Per-ticker sub-DB entries** created in `Fresh News` (`{{NOTION_FRESH_NEWS_DS}}`) for new same-day catalysts, and `Second Day Plays` (`{{NOTION_SECOND_DAY_DS}}`) for continuations/technical. Each entry has: Ticker, Bias (Long/Short/Neutral), Setup (multi-select per DB's options — note: Fresh News has "Earnings" option, Second Day Plays does NOT), Support, Resistance, Inflexion, Trading Plan, Notes, Date=today, Triggered (initially false), Outcome (TBD)
+- **Private Drive write:** save FULL version to `Game_Plan` folder (id `{{DRIVE_GAMEPLAN_FOLDER_ID}}`) as `GAMEPLAN-YYYY-MM-DD.md`; cross-link from Notion page property
+
+## ⛔ HARD RULE: DAS Market Viewer Path — `GamePlan\` Subfolder Only
+
+**The one canonical DAS watchlist path on every node is:**
+
+```
+<DAS_ROOT>\GamePlan\GamePlan-Today.txt
+```
+
+The install root (`<DAS_ROOT>`, e.g. `C:\Cobra Trading_x64`) comes from `DAS_ROOT` in
+`~/.claude/.env`, which is authoritative. When DAS is reinstalled to a new folder, update
+`DAS_ROOT`; every path below follows it.
+
+Plus the dated sibling `GamePlan\GamePlan-YYYY-MM-DD.txt`. Nothing else is a game plan file.
+
+**Never write, read, or load `<DAS_ROOT>\GamePlan-Today.txt` (the install root).**
+The DAS install root holds DLLs and `Config.cfg`; plan files stay out of it. Any root-level
+`GamePlan*.txt` is a **legacy decoy** — it is not maintained, it will be stale, and loading it
+puts an old board in front of the operator that looks current.
+
+**Operator setup:** point Market Viewer at the `GamePlan\` subfolder once. Right-click the
+Market Viewer tab → Load → `<DAS_ROOT>\GamePlan\GamePlan-Today.txt`. DAS remembers
+the last directory, so this is a one-time action per node.
+
+**Why this rule exists:** on 2026-08-18 one node's subfolder copy was 18 days stale after a
+cluster handoff, while a *differently* stale root-level copy sat beside it — two files, two
+dates, neither correct, no way to tell from inside DAS which one the Viewer had loaded. One
+path removes the ambiguity.
+
+### Node-local artifacts do not survive a cluster handoff
+
+Slack, Notion, Drive and Discord are shared surfaces — publishing them once covers every node.
+**The DAS file is the only deliverable that is node-local.** A `DAS Viewer ✅` from the
+publishing node is evidence about *that node's* C: drive and nothing more.
+
+**After any handoff, the receiving node re-runs Phase 8 before the open** and verifies by
+`mtime`, never by the publisher's report:
+
+```bash
+python3 ~/falcon/dashboard/das_market_viewer.py <tickers> --file-only
+```
+
+`das_market_viewer.py` is a host tool the operator provides at that path; it is not bundled with
+this skill.
+
+`--file-only` skips the CMD API probe — use it whenever DAS is not up.
+
+**⛔ Never hardcode the CMD API port.** Read `DAS_PORT` from `~/.claude/.env` (also
+at `<DAS_ROOT>\Config.cfg` → `CMDAPI:PORT`). On 2026-08-28 this workflow's own prose named a stale
+port; probing it returned a refusal, which was published as "DAS is DOWN" while DAS was serving
+quotes on the configured port. The whole plan was then built on 15-min-lagged Polygon
+data and broadcast to five channels. Verify with:
+```bash
+python3 ~/.claude/Tools/das_quote.py SPY --seconds 6   # host tool; reads DAS_PORT from .env
+```
+The write itself does not require DAS to be running. Linked memory:
+`[[reference-node-local-artifacts-dont-survive-handoff]]`.
 
 ## ⛔ HARD RULE: Falcon-Cluster Bus
 
@@ -216,14 +346,21 @@ Run before Phase 6 synthesis (data: **CBOE public delayed-quotes feed** — free
 tradekit gex --max-dte 14
 ```
 
-**The tool is [`tradekit`](https://github.com/davdunc/tradekit), not a script in this plugin.**
-Install with `uv tool install tradekit` (or from a checkout: `uv tool install ~/src/tradekit`).
+**The tool is [`tradekit`](https://github.com/davdunc/tradekit) (`analysis/gex.py`, `tradekit gex`),
+not a script in this plugin.** Install with `uv tool install tradekit` (or from a checkout:
+`uv tool install <path-to-tradekit>`). If `tradekit gex` is missing, install it — do not copy a
+script back in.
 
 This plugin shipped its own `Tools/spy_gex_compute.py` until 2026-09-08. It was deleted, and a
-copy should not be reintroduced. Three machines ended up running three different versions of that
-file at three different paths; a correction shipped to one never reached the others, and nothing
-in any of their outputs distinguished them. A packaged CLI makes the version a number you can
-print — `tradekit --version` — rather than a file date you have to go and compare.
+copy should not be reintroduced on any node. Three machines ended up running three different
+versions of that file at three different paths; a correction shipped to one never reached the
+others, and nothing in any of their outputs distinguished them. A packaged CLI makes the version a
+number you can print — `tradekit --version` — rather than a file date you have to go and compare.
+
+Verify the version before trusting a reading, and put it in the cluster beacon:
+```bash
+tradekit gex --json | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['asof'], d['regime'])"
+```
 
 Paste the markdown output into the macro section. The regime label + tape-read implication determines how to grade today's setups:
 
@@ -242,14 +379,46 @@ Zero-gamma flip level: if within $5 of spot, the day will likely revolve around 
 
 Linked memory: `[[ema9-sma34-cross-research]]` (flow tools), `[[imbalance-papers]]` (broader theoretical context), `[[falcon-cluster-agent-sync]]` (other-machine agents read the same output).
 
+## ⛔ HARD RULE: Volatility Context (IV Rank) in the Macro Block and on every ACTIVE name
+
+**Every MorningGamePlan run MUST include a Volatility sub-table under §2 MACRO** for SPY, the
+thesis ticker, and every ACTIVE watchlist name — IV30, IV Rank, IV percentile, HV20, IV/HV — from:
+
+```bash
+~/src/tradekit/.venv/bin/python ~/.claude/Tools/iv_rank.py SPY <active tickers>
+```
+
+`iv_rank.py` is a host tool the operator provides (run with the tradekit interpreter); it is not
+bundled with this skill.
+
+Same CBOE delayed feed as `tradekit gex`; the tool appends today's IV30 to
+`Intelligence/iv_history.csv`, which is the only source of the rank. **IVR is `n/a` until ≥20
+sessions of local history exist for a ticker** — print it as `n/a (N sess)` and lean on IV/HV.
+Do not paste a rank from a broker screen without naming the screen and its lookback.
+
+Operator rule 2026-09-24, citing Bob Sosnoff (Tastytrade, later Lossdog.com): ignoring volatility as
+a factor of any trade is a mistake that may make it impossible to be profitable. Linked memory:
+`[[iv-rank-in-reviews]]`.
+
+**How it changes the plan, not just decorates it:**
+
+| Reading | Plan consequence |
+|---|---|
+| IVR ≥ 50 or IV/HV ≥ 1.3 | market is braced: expect wider ranges; stops off 1.5×ATR are the floor, not the target; breakout targets extend, entries wait for the closed bar |
+| IVR ≤ 20 or IV/HV ≤ 0.8 | complacent: expansion risk both ways; breakouts need volume confirmation; fades are lower-conviction |
+| SPY IVR high + name IVR low | idiosyncratic setup in a nervous tape — size down, kill earlier |
+
+The fixed §4 watchlist columns do not change; the vol read lives in §2 and, for ACTIVE names, as a
+clause inside the Trigger cell.
+
 ## ⛔ HARD RULE: Trigger Kill Time
 
 **Every thesis trade and watchlist entry MUST specify a "Trigger Kill Time" — an explicit clock time after which the setup is dead for the session, regardless of price action.**
 
-Format on the gameplan: `Trigger: <condition> | Kill: HH:MM CT`
+Format on the gameplan: `Trigger: <condition> | Kill: HH:MM ET`
 
 Defaults (override per setup):
-- **Thesis trades:** Kill = open + 30 min (e.g., 9:00 CT for a standard 8:30 CT open, 10:00 CT for NFP days where open delays)
+- **Thesis trades:** Kill = open + 30 min (e.g., 10:00 ET for a standard 09:30 ET open, 11:00 ET for NFP days where open delays)
 - **ORB / first-15-min-range-break setups:** Kill = open + 45 min (the range needs time to form, then break)
 - **Day-2 continuation / Day-3 continuation:** Kill = open + 60 min (require trend confirmation, not first-bar entry)
 - **Bounce-Fade / Failed-Breakdown-Reclaim:** Kill = open + 90 min (require failure of the prior move first)
@@ -260,11 +429,48 @@ If the trigger has not fired by Kill Time, **the thesis is dead for the day.** N
 
 **Anti-pattern this prevents:** Operator stares at the published thesis ticker for 90 min waiting for the "perfect" entry; chop feels like a knife; substitute setups (often banned-LIVE names with intraday momentum) start looking like the only available trade; operator clicks substitutes. The Kill Time converts open-ended wait into a defined go/no-go window.
 
-**How to apply during synthesis:** Add `Kill: HH:MM CT` to every Thesis Trade block and every Watchlist row's Trigger column. Use defaults above unless the setup has a specific reason to extend (e.g., earnings-reaction trades may need to wait for the first analyst note that drives direction).
+**How to apply during synthesis:** Add `Kill: HH:MM ET` to every Thesis Trade block and every Watchlist row's Trigger column. Use defaults above unless the setup has a specific reason to extend (e.g., earnings-reaction trades may need to wait for the first analyst note that drives direction).
+
+## ⛔ HARD RULE: ET Everywhere (Kestrel D-20, operator 2026-11-18)
+
+Every time the operator reads is **ET**: the plan, kill times, the calendar, Event Book, box
+checks, Discord and Notion posts, `tm` tickets. CT never appears in a published plan. The host
+clock is CT, so convert at the edge (cron, timers) and nowhere else. Older notes in this file
+that cite CT are history, not instructions.
+
+## ⛔ HARD RULE: Market Vision Leads the Macro Block (Kestrel D-18, operator 2026-11-17)
+
+Every session gets a bird's-eye read of the whole tape before any single-name idea. The source is SMB, "How to Nail The Market Environment Nearly Every Day": the trader buying a Microsoft breakout while 80% of the Nasdaq is red and staples lead.
+
+```bash
+python3 ~/.claude/Tools/market_vision.py          # premarket: tone vs prior close
+python3 ~/.claude/Tools/market_vision.py --session # after 09:30 ET: tone vs open
+```
+
+`market_vision.py` is a host tool the operator provides; it is not bundled with this skill.
+
+- **Placement:** the verdict line goes **first in MACRO**, above the regime. The ETF filter table goes under it.
+- **Re-reads:** take the read again at **09:45 ET** (post-ORB), at every `gameplan.update`, and at **15:30 ET**. Each one is **appended**, never rewritten. Every run logs to `Vision/vision-log.jsonl`.
+- **Four-box environment (D-19, 2026-11-18):** session reads also print the SPY/QQQ box: **HSLW** trend up, **LSHW** trend down, **LSLW** chop, **HSHW** two-way. Systemd timers take the checks at **09:45 / 12:00 / 15:45 ET** (`market_vision.py --session --check open|midday|close`). Each `gameplan.update` quotes the latest box and asks "is it still true?".
+  - In **LSLW**, no breakout/breakdown/ORB triggers. Edge plays only, or stand aside.
+  - A trend box blocks the counter-trend continuation.
+  - **Never re-thesis in premarket on a feeling.** The box doesn't exist until 09:45 ET. Until then, a MIXED verdict keeps both sides of the thesis armed (the 11-17 lesson).
+- **Gate (I-28):**
+  - **TREND-DOWN:** no breakout or ORB longs ("no paying through highs").
+  - **TREND-UP:** no breakdown or ORB shorts.
+  - **MIXED:** fired triggers only, smallest size. "Don't make up a trade."
+- **Vision vs thesis:** if the premarket Vision leans against the thesis side, say so in the THESIS block in one line.
+- **Context lines (context only, never a gate):** every Vision read also prints two lines. Both go into MACRO directly under the verdict, every read, premarket and session.
+  - **200-day (D-23):** SPY / QQQ / SMH vs their 200-day average (price, % away, above / at / below, slope). It says where the overhead supply sits.
+  - **Ratio grid (D-24):** Trade Brigade's risk-on ÷ defensive set, XLK/SHY · XLK/XLU · XLY/XLP · SMH/XLV. Each pair shows its change vs the prior close, % vs its 20-day average, the 20-day slope and higher low / lower low, plus "N/4 above 20-day". Live prices come from DAS (last, else bid/ask midpoint). A leg that falls back to Massive is ~15 min delayed and the read flags it; treat that pair as stale.
+  - **How to read the grid:** a gap that lifts the ratios while their 20-day averages are still **falling with lower lows** is a **counter-trend bounce**. Fade the lower highs into resistance and don't chase breakouts. A **higher low plus a rising 20-day slope** on 3 or more of the 4 ratios is the tone change. Say which one it is in one line under the verdict.
+  - **Grid vs thesis:** a long thesis while 0–1 of 4 ratios are above their 20-day average gets a "counter-trend tape: take profits into resistance" line in the THESIS block.
+  - Each `gameplan.update` quotes the latest grid count next to the box.
+- **What we can and can't measure:** NYSE TICK, ADD and VOLD are not available (DAS returns no quote, and our Massive tier has no indices). Breadth is computed from the full Massive stocks snapshot. The TICK stand-in is a **labelled minute-breadth proxy**.
 
 ## Steps
 
-### Phase 1: Market Context (6:00-6:20 CT)
+### Phase 1: Market Context (07:00-07:20 ET)
 
 1. **Check futures/ETFs:**
    - `MarketData.ts quote SPY QQQ IWM /CL GLD`
@@ -310,14 +516,34 @@ If the trigger has not fired by Kill Time, **the thesis is dead for the day.** N
 
    Note: If Substrate data is more than 7 days old, flag it and run `bun ~/.claude/skills/USMetrics/Tools/UpdateSubstrateMetrics.ts` before proceeding.
 
-3b. **SPY GEX Snapshot:** run the GEX snapshot per the *SPY GEX Snapshot in Macro Block* hard rule above (CBOE-sourced, `tradekit gex`), paste it into the macro block, and feed its regime label into step 4.
+3b. **SPY GEX Snapshot:** run the GEX snapshot per the *SPY GEX Snapshot in Macro Block* hard rule above (CBOE-sourced, `tradekit gex`), paste it into the macro block, and feed its regime label into step 4 as evidence.
 
-4. **Determine market regime** (informed by steps 1-3 above):
-   - Trending / Ranging / Gap Day / High Volatility / Choppy
-   - Use VIX signal from step 3 as primary input
-   - Query intelligence: `Intelligence/MarketRegimes/[regime].md` for how to trade today
+4. **Market regime comes from tradekit, per dimension. Never hand-label it** (operator rule 2026-10-06; tradekit ADR 0002):
+   ```bash
+   tradekit regime --json --event "fed:Williams 09:05 ET" --event "corp:MRVL investor day 09:00 ET"   # events from step 2
+   ```
+   - **Lead with `glance`; it must read at a glance** (operator, 2026-10-06). The Regime section opens with
+     `glance.headline` as a heading (e.g. "🔁 RANGE DAY — fade the edges, trade catalysts"), then the `chips` on
+     one line, then **✅ Trade / ⚠️ Careful / ❌ Off** from `glance.trade|careful|off`, then "Provisional" while
+     `glance.provisional`. The evidence table goes **under** it, never above it. The Notion header callout and
+     `Regime` property use the headline plus chips only.
+   - Under the glance, render the **evidence** table from `state` + `evidence`: direction, structure,
+     volatility, participation, liquidity, events, data_quality. Show `conflicts` (e.g. QQQ vs SPY) and the
+     `configuration_status`. While it is `experimental`, label the read **provisional**.
+   - Copy the `playbooks` decisions into the validity gate. A `blocked` playbook does not reach ACTIVE;
+     `conditional` carries its reason into the Trigger cell. The regime **gates setups. It is never a trade
+     signal** and never sets direction for a name on its own.
+   - Notion: `Regime` (text) = the one-line dimension summary from the JSON. The legacy `Market Regime`
+     multi-select gets **exactly one** value, mapped from the JSON: structure `range` → Ranging; `trend` + `up`
+     → Melting Higher; `trend` + `down` → Trending Down; `transition` → Choppy; anything `unknown` → leave empty.
+     Never copy the weekly page's labels into the daily field.
+   - If tradekit exits 2 (no approved `~/.config/tradekit/regime.yaml`) or 3 (Massive unavailable), write
+     **Regime: UNAVAILABLE — <reason>** and continue. Do not substitute a hand-picked label.
+   - There is no verified public SMB regime list. Do not cite one.
+   - Query intelligence for the dimensions that bind today (e.g. `Intelligence/MarketRegimes/` notes on
+     range days or narrow participation) for how to trade them.
 
-### Phase 2: Scanning & Watchlist (6:15-6:45 CT)
+### Phase 2: Scanning & Watchlist (07:15-07:45 ET)
 
 1. **Run Finviz screener:**
    - Pre-market gappers > 3% with volume > 500K
@@ -339,13 +565,13 @@ If the trigger has not fired by Kill Time, **the thesis is dead for the day.** N
    - Filter: must deliver $1 intraday move (check avg daily range)
    - Filter: account size ($3-50 sweet spot, $50-400 A+ only, >$400 excluded)
 
-4. **Grade each ticker** (per PlaybookSetups.md grading criteria + covariance status)
+4. **Grade each ticker** (per `Reference/PlaybookSetups.md` grading criteria + covariance status)
 
 5. **Separate into two categories:**
    - **Fresh News:** New catalysts today (earnings, filings, breaking news)
    - **Second Day Plays / Technical Setups:** Day 2 continuations, HTF setups, range breaks
 
-### Phase 3: Query Intelligence Base (6:45-7:00 CT)
+### Phase 3: Query Intelligence Base (07:45-08:00 ET)
 
 For each ticker on the watchlist:
 
@@ -360,9 +586,9 @@ For each ticker on the watchlist:
    - Based on recent review patterns (e.g., "exiting winners too early")
    - Pull from `Intelligence/Psychology/`
 
-### Phase 4: Build the Game Plan (7:00-7:15 CT)
+### Phase 4: Build the Game Plan (08:00-08:15 ET)
 
-1. **Create Notion entry** in David Duncan Daily Game Plan database:
+1. **Create Notion entry** in the Daily Game Plan database (`{{NOTION_GAMEPLAN_DB}}`):
    - Date, Monthly Goal, Weekly Goal
    - Market Regime
    - 1% Change (behavioral focus from recent lessons)
@@ -380,7 +606,7 @@ For each ticker on the watchlist:
    - Profit targets (R:R ratio)
    - Intelligence note (what analysts/intel says about this setup)
 
-### Phase 5: Identify the Thesis Trade (7:15-7:30 CT)
+### Phase 5: Identify the Thesis Trade (08:15-08:30 ET)
 
 > "Trade the thesis, not the ticker that's moving the most on your screen."
 
@@ -402,7 +628,7 @@ Present the complete game plan:
 ```
 ═══ MORNING GAME PLAN — [Date] ═══
 
-Market Regime: [regime]
+Market Regime: [tradekit regime dimensions, e.g. neutral · range · normal vol · mixed participation]
 1% Change: [behavioral focus]
 Thesis Trade: [TICKER] — [setup type] — [direction]
 
@@ -424,12 +650,12 @@ INTELLIGENCE NOTES:
 [relevant analyst insights for today's setups]
 
 RULES REMINDER:
-[top 3 rules from RulesOfEngagement.md based on recent patterns]
+[top 3 rules from `Reference/RulesOfEngagement.md` based on recent patterns]
 ```
 
-### Phase 7: Post to #general — Discipline Workshop Format
+### Phase 7: Post to #watchlist — Discipline Workshop Format
 
-Post the trading plan to Slack channel **#general** (ID: `{{SLACK_PUBLIC_ID}}`) using the discipline workshop format below. This is a focused, accountability-first summary — not the full game plan dump.
+Post the trading plan to Slack channel **#watchlist** (ID: `{{SLACK_WATCHLIST_ID}}`, private; NOT #general — that is for the daily review) using the discipline workshop format below. This is a focused, accountability-first summary — not the full game plan dump.
 
 ```
 *GAME PLAN — [Date]* | Regime: [regime]
@@ -459,7 +685,7 @@ Post the trading plan to Slack channel **#general** (ID: `{{SLACK_PUBLIC_ID}}`) 
 - Lead with the behavioral commitment (1% Change) — discipline first
 - Thesis trade must have all four fields (entry, stop, target, edge) or don't post it
 - Watchlist: max 6 tickers, z-score status only (NORMAL / EXTENDED / EXTREME)
-- Rules: pull the 3 most relevant from RulesOfEngagement.md based on recent review patterns
+- Rules: pull the 3 most relevant from `Reference/RulesOfEngagement.md` based on recent review patterns
 
 ### Phase 7b: Post to Discord (auto, parallel with Phase 7)
 
@@ -499,15 +725,16 @@ After presenting the game plan, automatically populate DAS Trader Market Viewer:
    ```bash
    python3 ~/falcon/dashboard/das_market_viewer.py TICKER1 TICKER2 TICKER3 ...
    ```
-   - Always writes `C:\Cobra Trading_x64\GamePlan\GamePlan-Today.txt` (1-right-click load fallback), creating the folder if absent
-   - The `GamePlan\` subfolder is deliberate — the DAS install root holds DLLs and `Config.cfg`, so plan files stay out of it
+   - Always writes `<DAS_ROOT>\GamePlan\GamePlan-Today.txt` (1-right-click load fallback), creating the folder if absent
+   - The `GamePlan\` subfolder is the **only** sanctioned path — see HARD RULE: DAS Market Viewer Path. Never write the install root
+   - Pass `--file-only` when DAS is not listening on `$DAS_HOST:$DAS_PORT`; the file write does not need DAS running
    - If DAS is running: probes CMD API SCRIPT commands to auto-populate Market Viewer
    - Reports to stderr whether auto-load succeeded or file-only
 
 3. **Output to user:**
    ```
    ══ DAS MARKET VIEWER ══════════════════════
-   Tickers written → C:\Cobra Trading_x64\GamePlan\GamePlan-Today.txt
+   Tickers written → <DAS_ROOT>\GamePlan\GamePlan-Today.txt
    [If DAS running]: Auto-load attempted via CMD API — check Market Viewer
    [If DAS not open]: Right-click Market Viewer tab → Load → GamePlan-Today.txt
    ═══════════════════════════════════════════

@@ -15,6 +15,13 @@ The system will:
 4. Append insights to the intelligence base
 5. Store full extract in `Intelligence/Analysts/[SourceName].md`
 
+**Cross-check follow-up (2026-09-14):** this is the *daily* registry (EveningVideoReview/video_intel.py).
+The weekly readiness review has its own separate registry at
+`{{WEEKLY_READINESS_CHANNELS}}` (the weekly readiness project's `Config/youtube-channels.json`) —
+deliberately separate, not drift, because some channels suit one cadence and not the other. Any
+time a source is added **here**, check whether it's also a candidate for the weekly list, and vice versa
+— don't assume "added to one" means "irrelevant to the other."
+
 ## Active Sources
 
 *Add sources as you discover them. Format:*
@@ -59,6 +66,17 @@ The system will:
 - **Focus:** Earnings breakdowns, consumer sector, accessible retail investor analysis
 - **Key value:** Fast earnings summaries with consumer behavior context. Good for capturing market reactions to consumer staples/retail misses. Connects macro stress (consumer confidence) to individual stock moves.
 - **Tone:** Educational, conversational, accessible
+
+### Investors Underground
+- **Platform:** YouTube
+- **URL:** https://www.youtube.com/@investorsunderground
+- **Channel ID:** UCt4n6w2o4dexydr77KXJ4mw
+- **RSS:** https://www.youtube.com/feeds/videos.xml?channel_id=UCt4n6w2o4dexydr77KXJ4mw
+- **Cadence:** High-volume — multiple videos/day, mixing daily premarket ticker watchlists, live premarket-prep streams, and short trading-psychology/mindset clips
+- **Focus:** Day-trading education blended with explicit ticker watchlists (e.g. "Thursday Watchlist $SPY $GPRO") and macro recaps (e.g. "AI Safety Scare, FOMC, & Oil Squeeze")
+- **Key value:** Added 2026-09-13 at the operator's request for the weekly readiness review. Combines a real premarket watchlist source with psychology-education content in one channel — overlaps somewhat with StockedUp (watchlist) and the psychology angle of standalone video-wisdom extraction.
+- **Tone:** High-energy, day-trading education + live prep
+- **Filter keywords:** none yet — untested. Volume looks similar to TraderTV Live's; revisit after a week of real pulls rather than guessing keywords now (see Blue Cloud's known filter-fragility issue below).
 
 ### Blue Cloud Trading
 - **Platform:** YouTube

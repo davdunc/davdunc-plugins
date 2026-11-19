@@ -35,7 +35,7 @@ For each match:
 ### 4. Cross-Reference
 
 If the query relates to a specific setup or ticker:
-- Also check `PlaybookSetups.md` for the formal setup definition
+- Also check `Reference/PlaybookSetups.md` for the formal setup definition
 - Check `~/.claude/LifeOS/USER/TRADING/Reviews/` for historical trades matching this pattern
 - Check TELOS WISDOM.md for personal lessons related to the topic
 
