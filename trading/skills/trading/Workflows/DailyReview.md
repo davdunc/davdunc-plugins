@@ -322,10 +322,7 @@ Identify 1-2 actionable lessons. Format for potential TELOS update.
 After generating the review, post to Slack channel **#general** (ID: `{{SLACK_PUBLIC_ID}}`, workspace
 `{{SLACK_WORKSPACE}}`) using this format.
 
-<!-- 2026-07-28: this step previously said "#watchlist ({{SLACK_WATCHLIST_ID}})", contradicting Hard Rule 5
-     in this same file. Verified via the Slack API that no #watchlist channel exists in the
-     workspace — #general ({{SLACK_PUBLIC_ID}}) is the real target, matching [[channel-topology]]. Posts
-     addressed to the old ID went nowhere. -->
+<!-- 2026-07-28: this step once said #watchlist; the daily review belongs in #general. Correction 2026-11-19: #watchlist DOES exist (private, {{SLACK_WATCHLIST_ID}}, created 2026-05-22); it is the game-plan channel (Kestrel D-3). The 07-28 claim that it did not exist was wrong. -->
 
 **⚠️ #general is a PUBLIC channel** — all workspace members are in it. Per `[[channel-topology]]`
 and `[[r-units-default]]`, express P&L in **R-multiples, not dollars**, and never include broker

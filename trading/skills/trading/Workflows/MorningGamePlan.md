@@ -209,9 +209,9 @@ was ungoverned and reinvented per session.
 
 ## ⛔ HARD RULE: Channel Topology + Notion Protocol
 
-**Notion + Slack #general + Discord = PUBLIC channels. Google Drive Game_Plan folder = PRIVATE channel.** Public-channel content is sanitized per `[[channel-topology]]` + `[[public-share-minimal]]` (strip broker accounts, FL internals, banned-ticker rationale, behavioral contracts verbatim, $ R-values).
+**Game plan routing (Kestrel D-3; operator clarified 2026-11-19): the game plan, including the EM and Hi/Lo lines tables, goes to Slack #watchlist ({{SLACK_WATCHLIST_ID}}), never #general.** #general ({{SLACK_PUBLIC_ID}}) carries only the daily review card. Notion + Slack #watchlist + Discord = the game plan's sanitized channels; Google Drive Game_Plan folder = PRIVATE. Sanitize per `[[channel-topology]]` + `[[public-share-minimal]]` (strip broker accounts, FL internals, banned-ticker rationale, behavioral contracts verbatim, $ R-values). *(An earlier operator instruction named #general for the EM and Hi/Lo tables; that was a slip, corrected 2026-11-19.)*
 
-Discord carries the **same sanitized payload as Slack #general** — one PUBLIC body is built once and posted to both. Never build a Discord-specific variant from the private Drive version; that is how unsanitized content reaches a server whose membership you do not control.
+Discord carries the **same sanitized payload as Slack #watchlist** — one PUBLIC body is built once and posted to both. Never build a Discord-specific variant from the private Drive version; that is how unsanitized content reaches a server whose membership you do not control.
 
 **Notion structure follows the protocol:** `~/.claude/LifeOS/USER/SKILLCUSTOMIZATIONS/Trading/NOTION_PROTOCOL.md`. Linked memory: `[[notion-gameplan-protocol]]`. Specifically:
 
@@ -288,7 +288,7 @@ Use one of:
 
 Post twice per MorningGamePlan run:
 1. **Start beacon** (before OBSERVE/synthesis): `:satellite: [MACHINE] MorningGamePlan START · ISO_TS`
-2. **Publish notification** (after Phase 7-8 publish completes): include Notion main page ID, Drive file ID, Slack #general message ts, and any sub-DB entry count
+2. **Publish notification** (after Phase 7-8 publish completes): include Notion main page ID, Drive file ID, Slack #watchlist message ts, and any sub-DB entry count
 
 Linked memory: `[[falcon-cluster-agent-sync]]`, `[[channel-topology]]`.
 
@@ -689,7 +689,7 @@ Post the trading plan to Slack channel **#watchlist** (ID: `{{SLACK_WATCHLIST_ID
 
 ### Phase 7b: Post to Discord (auto, parallel with Phase 7)
 
-Posts the **same sanitized body built for Slack #general** — build the PUBLIC payload once, send it
+Posts the **same sanitized body built for Slack #watchlist** — build the PUBLIC payload once, send it
 to both. Discord is a PUBLIC channel per the topology rule above.
 
 ```bash
